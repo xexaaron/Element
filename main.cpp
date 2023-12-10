@@ -1,5 +1,6 @@
 #include "Include/Window.h"
 #include <iostream>
+#define TEST
 
 int main() {
     SWindowData Data;
@@ -9,3 +10,4 @@ int main() {
     Window* m_Window = new Window(Data);
     return 0;
 }
+
