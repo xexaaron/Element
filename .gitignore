@@ -2,3 +2,10 @@ CMakeCache.txt
 *.exe
 change_log.txt
 reverse_change_log.txt
+*.vcxproj
+*.filters
+build/CMakeFiles
+*.sln
+build/Element.dir
+build/x64
+MakeFile
