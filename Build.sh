@@ -8,8 +8,8 @@ toolsDir="$scriptDir/Tools"
 if [ -d "$toolsDir/Super" ]; then
     (
     cd "$toolsDir/Super" || exit
-    python SuperGen.py
-    python SuperImpl.py
+    python3 SuperGen.py
+    python3 SuperImpl.py
   )
 fi
 
@@ -28,7 +28,7 @@ if [ $? -eq 0 ]; then
     if [ -d "$toolsDir/Super" ]; then
       (
       cd "$toolsDir/Super" || exit
-      python SuperLog.py
+      python3 SuperLog.py
       )
     fi
 else
@@ -38,7 +38,7 @@ fi
 if [ -d "$toolsDir/Super" ]; then
     (
     cd "$toolsDir/Super" || exit
-    python SuperDestruct.py
+    python3 SuperDestruct.py
   )
 fi
 
