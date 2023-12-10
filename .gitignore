@@ -1,3 +1,4 @@
-build/CMakeCache.txt
+CMakeCache.txt
 *.exe
-*.txt
+change_log.txt
+reverse_change_log.txt
