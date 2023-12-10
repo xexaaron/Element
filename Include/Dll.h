@@ -78,6 +78,13 @@
                 thread.join();
             }
         }
+        void* UNIX_FIND_MODULE(const char* MODULE) {
+            auto it = LoadedModules.find(MODULE);
+            if (it != LoadedModules.end()) {
+                return it->second;
+            }
+            return nullptr;
+        }
         void UNIX_UNLOAD_MODULE(const char* MODULE) {
             void* moduleHandle = UNIX_FIND_MODULE(MODULE);
             if (moduleHandle) {
@@ -87,13 +94,6 @@
                 std::cerr << "Error: Trouble unloading module " << MODULE << std::endl;
             }
         }
-        void* UNIX_FIND_MODULE(const char* MODULE) {
-        auto it = LoadedModules.find(MODULE);
-        if (it != LoadedModules.end()) {
-            return it->second;
-        }
-        return nullptr;
-    }
         void UNIX_CALL_MODULE_FUNCTION(const char* MODULE, const char* FUNCTION_NAME) {
             void* moduleHandle = LoadedModules[MODULE];
             if (moduleHandle) {
