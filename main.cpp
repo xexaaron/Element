@@ -1,6 +1,6 @@
 #include "Include/Window.h"
 #include <iostream>
-#define TEST
+
 
 int main() {
     SWindowData Data;
