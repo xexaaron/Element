@@ -9,6 +9,7 @@ build/CMakeFiles
 *.cmake
 *.tlog
 *.bin
+*.ipch
 build/*.dir
 build/x64
 MakeFile
