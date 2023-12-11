@@ -6,10 +6,11 @@
 
 class Window final {
 public:
-
-    Window(SWindowData data)  : Data(data) {
+    Window(SWindowData data)  : Data(data), TargetPlatform(TARGET_PLATFORM) {
         LoadModule(WINDOW_DLL);
-        CallModuleFunc(WINDOW_DLL, "CreateAndRunWindow");
+        CallModuleFuncWithArgs<std::string>(WINDOW_DLL, "WIN32_TestMessage", "Testing"); // This fails
+        CallModuleFuncWithArgs(WINDOW_DLL, "CreateAndRunWindow"); // This Works
+        
     }
     ~Window() {
         UnloadModule(WINDOW_DLL);
@@ -26,4 +27,5 @@ public:
     SWindowData GetData();
 private:
     SWindowData Data;
+    std::string TargetPlatform;
 };

@@ -1,5 +1,6 @@
 #pragma once
 
-#define SRC_DIRECTORY "/home/xexaaron/Repositories/Element/src/"
-#define INCLUDE_DIRECTORY "/home/xexaaron/Repositories/Element/include/"
-#define WINDOW_DLL "/home/xexaaron/Repositories/Element/Modules/Linux/libWindow.so"
+#define SRC_DIRECTORY "D:/GithubRepositories/Element/src/"
+#define INCLUDE_DIRECTORY "D:/GithubRepositories/Element/include/"
+#define WINDOW_DLL "D:/GithubRepositories/Element/Modules/Windows/Window.dll"
+#define TARGET_PLATFORM "Windows"

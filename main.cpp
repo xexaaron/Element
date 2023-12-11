@@ -1,7 +1,6 @@
 #include "include/Window.h"
 #include <iostream>
 
-
 int main() {
     SWindowData Data;
     Data.Size = Vector2D<int>{800, 600};

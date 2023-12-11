@@ -1,11 +1,14 @@
 CMakeCache.txt
-*.exe
+Element.exe
 change_log.txt
 reverse_change_log.txt
 *.vcxproj
 *.filters
 build/CMakeFiles
 *.sln
-build/Element.dir
+*.cmake
+*.tlog
+*.bin
+build/*.dir
 build/x64
 MakeFile
