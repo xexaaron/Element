@@ -1,0 +1,3 @@
+/home/xexaaron/Repositories/Window/Linux/build/CMakeFiles/Window.dir
+/home/xexaaron/Repositories/Window/Linux/build/CMakeFiles/edit_cache.dir
+/home/xexaaron/Repositories/Window/Linux/build/CMakeFiles/rebuild_cache.dir
