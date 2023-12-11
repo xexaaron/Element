@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -O3 -DNDEBUG -shared -Wl,-soname,libWindow.so -o libWindow.so CMakeFiles/Window.dir/Window.cpp.o   -L/usr/lib/x86_64-linux-gnu/libX11.so  -Wl,-rpath,/usr/lib/x86_64-linux-gnu/libX11.so /usr/lib/x86_64-linux-gnu/libX11.so 
