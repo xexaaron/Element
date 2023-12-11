@@ -3,6 +3,7 @@
 #include <cstdarg>
 #include <iostream>
 #include <map>
+#include <functional>
 #include <vector>
 #include <thread>
 #include <type_traits>
@@ -88,33 +89,39 @@
         void WIN32_CALL_MODULE_FUNCTION_ARGS(const char* MODULE, const char* FUNCTION_NAME, Args... args) {
             HMODULE moduleHandle = LoadedModules[MODULE];
             using FunctionType = void(*)(Args...);
-
+            
             // Get the address of the function from the loaded module
             FunctionType function = reinterpret_cast<FunctionType>(GetProcAddress(moduleHandle, FUNCTION_NAME));
+            
+            // Log the function call
+            size_t lastSlashPos = std::string(MODULE).find_last_of('/');
+            if (lastSlashPos != std::string::npos) {
+                // Extract the substring from last slash position until the end
+                std::string moduleNameSubstring = std::string(MODULE).substr(lastSlashPos + 1);
+                std::cerr << "Function Call: WIN32_CALL_MODULE_FUNCTION_ARGS("
+                        << moduleNameSubstring << ", " << FUNCTION_NAME << ", " << LogArguments(args...) << ")" << std::endl;
+            } else {
+                std::cerr << "Function Call: WIN32_CALL_MODULE_FUNCTION_ARGS("
+                        << MODULE << ", " << FUNCTION_NAME << ", " << LogArguments(args...) << ")" << std::endl;
+            }
+
+            // Log the argument types
+            std::cerr << "Argument Types: ";
+            int dummy2[] = {0, ((void)(std::cerr << LogArgumentType(args) << " "), 0)...};
+            (void)dummy2; // Avoids unused variable warning
+            std::cerr << std::endl;
+            std::cerr << "Arguments: ";
+            int dummy3[] = {0, ((void)(std::cerr << args << " "), 0)...};
+            (void)dummy3; // Avoids unused variable warning
+            std::cerr << std::endl;    
             if (function != nullptr) {
-                function(args...); // Corrected syntax: Expand args parameter pack
+                // If the function is found, execute it
+                function(args...);
             } else {
                 std::cerr << "Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
-
-                // Log the function call
-                size_t lastSlashPos = std::string(MODULE).find_last_of('/');
-                if (lastSlashPos != std::string::npos) {
-                    // Extract the substring from last slash position until the end
-                    std::string moduleNameSubstring = std::string(MODULE).substr(lastSlashPos + 1);
-                    std::cerr << "Function Call: WIN32_CALL_MODULE_FUNCTION_ARGS("
-                            << moduleNameSubstring << ", " << FUNCTION_NAME << ", " << LogArguments(args...) << ")" << std::endl;
-                } else {
-                    std::cerr << "Function Call: WIN32_CALL_MODULE_FUNCTION_ARGS("
-                            << MODULE << ", " << FUNCTION_NAME << ", " << LogArguments(args...) << ")" << std::endl;
-                }
-
-                // Log the argument types
-                std::cerr << "Argument Types: ";
-                int dummy2[] = {0, ((void)(std::cerr << LogArgumentType(args) << " "), 0)...};
-                (void)dummy2; // Avoids unused variable warning
-                std::cerr << std::endl;
             }
         }
+        
     #else // Unix
         #include <dlfcn.h>
         template<typename T>

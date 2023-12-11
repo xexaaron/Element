@@ -8,8 +8,9 @@ class Window final {
 public:
     Window(SWindowData data)  : Data(data), TargetPlatform(TARGET_PLATFORM) {
         LoadModule(WINDOW_DLL);
-        CallModuleFuncWithArgs(WINDOW_DLL, "CreateAndRunWindow"); // This Works
-        CallModuleFuncWithArgs<std::string>(WINDOW_DLL, "WIN32_TestMessage", "Testing"); // This fails
+        WIN32_CALL_MODULE_FUNCTION_ARGS<std::string>(WINDOW_DLL, "WIN32_TestMessage", "Testing"); 
+        CallModuleFuncWithArgs(WINDOW_DLL, "CreateAndRunWindow"); 
+        
     }
     ~Window() {
         UnloadModule(WINDOW_DLL);
