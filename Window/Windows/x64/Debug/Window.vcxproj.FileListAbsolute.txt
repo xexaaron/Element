@@ -1,2 +1,3 @@
 D:\Projects\Window\Window\x64\Debug\Window.dll
 D:\GithubRepositories\Window\Windows\x64\Debug\Window.dll
+D:\GithubRepositories\Element\Window\Windows\x64\Debug\Window.dll
