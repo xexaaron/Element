@@ -21,12 +21,11 @@ int WindowSizeY = 600;
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 WINDOWDLL_API void WIN32_TestMessage(std::string msg) {
-    /**
-    * if (!msg.empty()) {
+    
+    if (!msg.empty()) {
         std::cout << "Testing Message : " << msg << std::endl;
     }
-    */
-    std::cout << "TESTING WITHOUT MESSAGE" << std::endl;
+  
 }
 
 WINDOWDLL_API void WIN32_SetWindowTitle(const char* Title) {
