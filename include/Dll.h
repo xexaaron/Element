@@ -45,14 +45,41 @@ std::string LogArgumentType(const T&) {
         }
     #endif // VERBOSE
 }
+template<typename... Args>
+    std::string LogArgumentTypes(const Args&... args) {
+    std::string result;
+    ((result += LogArgumentType(args) + " "), ...); 
+    return result;
+}
+template<typename... Args>
+void MassLogArguments(const char* moduleName, const char* functionName, Args... args) {
+    // Log the function call
+    size_t lastSlashPos = std::string(moduleName).find_last_of('/');
+    if (lastSlashPos != std::string::npos) {
+        std::string moduleNameSubstring = std::string(moduleName).substr(lastSlashPos + 1);
+        std::cerr << "Function Call   : WIN32_CALL_MODULE_FUNCTION_ARGS("
+                << moduleNameSubstring << ", " << functionName << ", " << LogArguments(args...) << ")" << std::endl;
+    } else {
+        std::cerr << "Function Call   : WIN32_CALL_MODULE_FUNCTION_ARGS("
+                << moduleName << ", " << functionName << ", " << LogArguments(args...) << ")" << std::endl;
+    }
+
+    // Log Argument Types
+    std::cerr << "Argument Types  : ";
+    int dummy2[] = {0, ((void)(std::cerr << LogArgumentType(args) << " "), 0)...};
+    (void)dummy2;
+    std::cerr << std::endl;
+
+    // Log Arguments
+    std::cerr << "Arguments       : ";
+    int dummy3[] = {0, ((void)(std::cerr << args << " "), 0)...};
+    (void)dummy3;
+    std::cerr << std::endl;
+}
+
     #ifdef _WIN32
         #include <windows.h>
-        template<typename... Args>
-        std::string LogArgumentTypes(const Args&... args) {
-            std::string result;
-            ((result += LogArgumentType(args) + " "), ...); 
-            return result;
-        }
+        
 
         static std::map<const char*, HINSTANCE> LoadedModules;
         void WIN32_LOAD_MODULE(const char* libPath) {
@@ -101,36 +128,14 @@ std::string LogArgumentType(const T&) {
                 std::cerr << "Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
             }
         }
-
-        template<typename... Args>
-        void WIN32_CALL_MODULE_FUNCTION_ARGS(const char* MODULE, const char* FUNCTION_NAME, Args... args) {
+        template<typename RetType, typename... Args>
+        RetType WIN32_CALL_MODULE_FUNCTION_ARGS(const char* MODULE, const char* FUNCTION_NAME, Args... args) {
             HMODULE moduleHandle = LoadedModules[MODULE];
-            using FunctionType = void(*)(Args...);
-            
-            // Get the address of the function from the loaded module
+            using FunctionType = RetType(*)(Args...);
             FunctionType function = reinterpret_cast<FunctionType>(GetProcAddress(moduleHandle, FUNCTION_NAME));
-            
-            // Log the function call
-            size_t lastSlashPos = std::string(MODULE).find_last_of('/');
-            if (lastSlashPos != std::string::npos) {
-                // Extract the substring from last slash position until the end
-                std::string moduleNameSubstring = std::string(MODULE).substr(lastSlashPos + 1);
-                std::cerr << "Function Call: WIN32_CALL_MODULE_FUNCTION_ARGS("
-                        << moduleNameSubstring << ", " << FUNCTION_NAME << ", " << LogArguments(args...) << ")" << std::endl;
-            } else {
-                std::cerr << "Function Call: WIN32_CALL_MODULE_FUNCTION_ARGS("
-                        << MODULE << ", " << FUNCTION_NAME << ", " << LogArguments(args...) << ")" << std::endl;
-            }
-            std::cerr << "Argument Types: ";
-            int dummy2[] = {0, ((void)(std::cerr << LogArgumentType(args) << " "), 0)...};
-            (void)dummy2; // Avoids unused variable warning
-            std::cerr << std::endl;
-            std::cerr << "Arguments: ";
-            int dummy3[] = {0, ((void)(std::cerr << args << " "), 0)...};
-            (void)dummy3;
-            std::cerr << std::endl;    
+            MassLogArguments(MODULE, FUNCTION_NAME, args...);
             if (function != nullptr) {
-                function(args...);
+                return function(args...);
             } else {
                 std::cerr << "Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
             }

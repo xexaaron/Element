@@ -4,6 +4,7 @@ projName="Element"
 scriptDir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CMProjName="$projName"
 toolsDir="$scriptDir/Tools"
+buildConfig="Release"
 
 if [ -d "$toolsDir/Super" ]; then
     (
@@ -13,12 +14,19 @@ if [ -d "$toolsDir/Super" ]; then
   )
 fi
 
+if [ "$1" == "-r" ]; then
+    buildConfig="Release"
+elif [ "$1" == "-d" ]; then
+    buildConfig="Debug"
+fi
+
 # Build Core Module and the Core Module dependencies
 echo ""
-echo "Building Executable: Engine"
+echo "Building Executable: $projName [$buildConfig]"
 echo ""
-cmake -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
-cmake --build build --config Release
+
+cmake -S . -B build -G "Unix Makefiles" -DCMAKE_BUILD_TYPE="$buildConfig"
+cmake --build build --config "$buildConfig"
 
 # Determine post-build state
 if [ $? -eq 0 ]; then
