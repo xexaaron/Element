@@ -7,6 +7,7 @@ set(SOURCE_FILES main.cpp
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build" FORCE)
 endif()
+
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     set(LIB_PREFIX "")
     set(LIB_EXT ".dll")
