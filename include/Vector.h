@@ -242,7 +242,6 @@ struct Vector4D {
         return *this;
     }
     
-
     Vector4D operator+(const Vector4D& other) const {
         return Vector4D(x + other.x, y + other.y, z + other.z, w + other.w);
     }
@@ -292,15 +291,13 @@ struct Vector4D {
     Vector4D operator/=(const T& scalar) const {
         return Vector4D(x /= scalar, y /= scalar, z /= scalar, w /= scalar);
     }
-
-    // Dot Product
+    
     T Dot(const Vector4D& other) const {
         return x * other.x + y * other.y + z * other.z + w * other.w;
     }
     T Magnitude() const {
         return sqrt(x * x + y * y + z * z + w * w);
     }
-    
     Vector4D<T> Normalize() const {
         T mag = Magnitude();
         if (mag != T(0)) {
