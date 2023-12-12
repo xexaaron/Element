@@ -31,7 +31,13 @@ RecType CallModuleFuncWithArgsAsync(const char* MODULE, const char* FUNCTION_NAM
     WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC<RecType, Args...>(MODULE, FUNCTION_NAME, PROCESS, ARGS...);
 }
 #else // UNIX
-#define Super Class
+/** Keyword Super gets replaced with the correct
+    namespace::parentclass pre build. 
+    Using the macro definition below we do
+    not have to deal with intellisense warnings.
+    See Root/Tools/Super/README.md for more info.
+*/
+#define Super:: this-> 
 #define LoadModule(module) UNIX_LOAD_MODULE(module)
 #define LoadModules(modules, quantity) UNIX_LOAD_MODULES(modules, quantity)
 #define UnloadModule(module) UNIX_UNLOAD_MODULE(module)
