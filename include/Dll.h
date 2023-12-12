@@ -121,17 +121,15 @@ std::string LogArgumentType(const T&) {
                 std::cerr << "Function Call: WIN32_CALL_MODULE_FUNCTION_ARGS("
                         << MODULE << ", " << FUNCTION_NAME << ", " << LogArguments(args...) << ")" << std::endl;
             }
-            // Log the argument types
             std::cerr << "Argument Types: ";
             int dummy2[] = {0, ((void)(std::cerr << LogArgumentType(args) << " "), 0)...};
             (void)dummy2; // Avoids unused variable warning
             std::cerr << std::endl;
             std::cerr << "Arguments: ";
             int dummy3[] = {0, ((void)(std::cerr << args << " "), 0)...};
-            (void)dummy3; // Avoids unused variable warning
+            (void)dummy3;
             std::cerr << std::endl;    
             if (function != nullptr) {
-                // If the function is found, execute it
                 function(args...);
             } else {
                 std::cerr << "Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
