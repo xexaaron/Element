@@ -8,28 +8,45 @@
 #include <thread>
 #include <type_traits>
 #include <string>
+template<typename T>
+std::string LogArgument(const T& arg) {
+    return std::to_string(arg);
+}
+
+template<typename T>
+std::string LogArgument(const std::basic_string<T>& arg) {
+    return std::string("\"") + std::string(arg.begin(), arg.end()) + std::string("\"");
+}
+template<typename... Args>
+std::string LogArguments(const Args&... args) {
+    std::string result;
+    ((result += LogArgument(args) + " "), ...); // Concatenate arguments with spaces
+    return result;
+}
+template<typename T>
+std::string LogArgumentType(const T&) {
+    #ifdef VERBOSE
+        return std::string(typeid(T).name());
+    #else // BASIC
+        if constexpr (std::is_same_v<T, std::string>) {
+            return "std::string";
+        } else if constexpr (std::is_same_v<T, int>) {
+            return "int";
+        } else if constexpr (std::is_same_v<T, float>) {
+            return "float";
+        } else if constexpr (std::is_same_v<T, double>) {
+            return "double";
+        } else if constexpr (std::is_same_v<T, char>) {
+            return "char";
+        } else if constexpr (std::is_same_v<T, bool>) {
+            return "bool";
+        } else {
+            return std::string(typeid(T).name()); // Return verbose definiton
+        }
+    #endif // VERBOSE
+}
     #ifdef _WIN32
         #include <windows.h>
-        template<typename T>
-        std::string LogArgument(const T& arg) {
-            return std::to_string(arg);
-        }
-
-        template<typename T>
-        std::string LogArgument(const std::basic_string<T>& arg) {
-            return std::string("\"") + std::string(arg.begin(), arg.end()) + std::string("\"");
-        }
-        template<typename... Args>
-        std::string LogArguments(const Args&... args) {
-            std::string result;
-            ((result += LogArgument(args) + " "), ...); // Concatenate arguments with spaces
-            return result;
-        }
-        template<typename T>
-        std::string LogArgumentType(const T&) {
-            return std::string(typeid(T).name());
-        }
-
         template<typename... Args>
         std::string LogArgumentTypes(const Args&... args) {
             std::string result;
@@ -104,7 +121,6 @@
                 std::cerr << "Function Call: WIN32_CALL_MODULE_FUNCTION_ARGS("
                         << MODULE << ", " << FUNCTION_NAME << ", " << LogArguments(args...) << ")" << std::endl;
             }
-
             // Log the argument types
             std::cerr << "Argument Types: ";
             int dummy2[] = {0, ((void)(std::cerr << LogArgumentType(args) << " "), 0)...};
