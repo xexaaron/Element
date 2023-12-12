@@ -2,6 +2,7 @@
 #define WINDOWDLL_EXPORTS
 #include "dllmain.h"
 #include <iostream>
+#include <tuple>
 
 // Global variables for the window
 HINSTANCE hInst;
@@ -13,101 +14,76 @@ int WindowPosY = 0;
 int WindowSizeX = 800;
 int WindowSizeY = 600;
 
+
+
 #define WIN32_EVENT_SET_WINDOW_TITLE (WM_USER + 1)
 #define WIN32_EVENT_SET_WINDOW_POSITION (WM_USER + 2)
 #define WIN32_EVENT_SET_WINDOW_SIZE (WM_USER + 3)
 #define WIN32_EVENT_SET_WINDOW_COLOR (WM_USER + 4)
+#define WIN32_EVENT_SET_WINDOW_STATE (WM_USER + 5)
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 WINDOWDLL_API int8_t WIN32_TestMessage(std::string msg) {
-    
     if (!msg.empty()) {
-        std::cout << "Testing Message : " << msg << std::endl;
-        return 0;
+        MessageBoxA(NULL, msg.c_str(), "Test Message", MB_OK);
     }
     else {
         return -1;
     }
+    return 0;
 }
 
 WINDOWDLL_API int8_t WIN32_SetWindowTitle(const char* Title) {
     if (hWnd) {
-        size_t length = strlen(Title) + 1;
-        wchar_t* l_Title = new wchar_t[(int)length];
-        MultiByteToWideChar(CP_ACP, 0, Title, -1, l_Title, (int)length);
-        SetWindowText(hWnd, l_Title);
-        delete[] l_Title;
-        return 0;
+        PostMessage(hWnd, WIN32_EVENT_SET_WINDOW_TITLE, 0, (LPARAM)Title);
     }
     else {
         return -1;
     }
+    return 0;
 }
-
 WINDOWDLL_API int8_t WIN32_SetWindowPosition(int x, int y) {
     if (hWnd) {
-        UINT Flags = SWP_NOSIZE;
-        WindowPosX = x;
-        WindowPosY = y;
-        if (!SetWindowPos(hWnd, hWnd, WindowPosX, WindowPosY, WindowSizeX, WindowSizeY, Flags)) {
-            DWORD error = GetLastError();
-            std::cerr << "ERROR: WIN32_SetWindowPosition() -> SetWindowPos() : failed with error code :"<< std::endl << "  " << error << std::endl;
-            return -1;
-        }
-        else {
-            RECT rect;
-            GetWindowRect(hWnd, &rect);
-            int windowWidth = rect.right - rect.left;
-            int windowHeight = rect.bottom - rect.top;
-            if (windowWidth != x || windowHeight != y) {
-                return -1;
-            }
-            else {
-                return 0;
-            }
-        }
+        LPARAM Pos = MAKELPARAM(static_cast<WORD>(x), static_cast<WORD>(y));
+        PostMessage(hWnd, WIN32_EVENT_SET_WINDOW_POSITION, 0, Pos);
     }
     else {
         return -1;
     }
+    return 0;
 }
 
-WINDOWDLL_API int8_t WIN32_SetWindowSize(int width, int height) {
+WINDOWDLL_API int8_t WIN32_SetWindowSize(int x, int y) {
     if (hWnd) {
-        UINT Flags = SWP_NOMOVE;
-        WindowSizeX = width;
-        WindowSizeY = height;
-        if (!SetWindowPos(hWnd, NULL, WindowPosX, WindowPosY, WindowSizeX, WindowSizeY, Flags)) {
-            DWORD error = GetLastError();
-            std::cerr << "ERROR: WIN32_SetWindowSize() -> SetWindowPos() : failed with error code :" << std::endl << "    " << error << std::endl;
-            return -1;
-        }
+        LPARAM Size = MAKELPARAM(static_cast<WORD>(x), static_cast<WORD>(y));
+        PostMessage(hWnd, WIN32_EVENT_SET_WINDOW_SIZE, 0, Size);
+    } else {
+        return -1;
     }
-    else {
-        return 0;
-    }
+    return 0;
 }
 
 WINDOWDLL_API int8_t WIN32_SetWindowColor(UINT32 Red, UINT32 Green, UINT32 Blue) {
     if (hWnd) {
-        COLORREF newColor = RGB(Red, Green, Blue);
-        LONG_PTR style = GetWindowLongPtr(hWnd, GWL_EXSTYLE);
-        if (style != 0) {
-            SetWindowLongPtr(hWnd, GWL_EXSTYLE, style | WS_EX_LAYERED);
-            SetLayeredWindowAttributes(hWnd, RGB(255, 255, 255), 0, LWA_COLORKEY);
-            SetLayeredWindowAttributes(hWnd, newColor, 0, LWA_COLORKEY);
-            return 0;
-        }
-        else {
-            std::cerr << "ERROR: WIN32_SetWindowColor() -> Failed to get window style." << std::endl;
-            return -1;
-        }
-    }
-    else {
-        std::cerr << "ERROR: WIN32_SetWindowColor() -> Window handle is not valid." << std::endl;
+        COLORREF Color = RGB(Red, Green, Blue);
+        PostMessage(hWnd, WIN32_EVENT_SET_WINDOW_COLOR, 0, (LPARAM)Color);
+    } else {
         return -1;
     }
+    return 0;
+}
+
+
+
+WINDOWDLL_API int8_t WIN32_SetWindowState(EWindowState state) {
+    if (hWnd) {
+        PostMessage(hWnd, WIN32_EVENT_SET_WINDOW_STATE, 0, (LPARAM)state);
+    }
+    else {
+        return -1;
+    }
+    return 0;
 }
 
 WINDOWDLL_API int CreateAndRunWindow() {
@@ -142,6 +118,43 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
     case WM_DESTROY:
         PostQuitMessage(0);
         break;
+    case WIN32_EVENT_SET_WINDOW_POSITION: {
+        int x = LOWORD(lParam);
+        int y = HIWORD(lParam);
+        SetWindowPos(hWnd, NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+        break;
+    }
+    case WIN32_EVENT_SET_WINDOW_SIZE: {
+        int width = LOWORD(lParam);
+        int height = HIWORD(lParam);
+        SetWindowPos(hWnd, NULL, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
+        break;
+    }
+    case WIN32_EVENT_SET_WINDOW_COLOR: {
+        COLORREF color = static_cast<COLORREF>(lParam);
+        HBRUSH hBrush = CreateSolidBrush(color);
+        SetClassLongPtr(hWnd, GCLP_HBRBACKGROUND, reinterpret_cast<LONG_PTR>(hBrush));
+        InvalidateRect(hWnd, NULL, TRUE);
+        break;
+    }
+    case WIN32_EVENT_SET_WINDOW_STATE: {
+        EWindowState state = static_cast<EWindowState>(lParam);
+        switch (state) {
+        case FULLSCREEN:
+            ShowWindow(hWnd, SW_SHOWMAXIMIZED);
+            break;
+        case MAXIMIZED:
+            ShowWindow(hWnd, SW_MAXIMIZE);
+            break;
+        case MINIMIZED:
+            ShowWindow(hWnd, SW_MINIMIZE);
+            break;
+        default:
+            ShowWindow(hWnd, SW_RESTORE);
+            break;
+        }
+        break;
+    }
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
     }

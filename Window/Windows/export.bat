@@ -1,13 +1,13 @@
 @echo off
 
 SET VERSION=Release
+SET SOURCE=x64\%VERSION%\Window.dll
+SET DESTINATION=..\..\Modules\Windows\%VERSION%\Window.dll
+COPY "%SOURCE%" "%DESTINATION%"
 
-IF "%~1"=="-r" (
-    SET VERSION=Release
-) ELSE IF "%~1"=="-d" (
-    SET VERSION=Debug
-)
+echo File copied from %SOURCE% to %DESTINATION%
 
+SET VERSION=Debug
 SET SOURCE=x64\%VERSION%\Window.dll
 SET DESTINATION=..\..\Modules\Windows\%VERSION%\Window.dll
 COPY "%SOURCE%" "%DESTINATION%"
