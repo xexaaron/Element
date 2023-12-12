@@ -129,7 +129,9 @@
             HMODULE moduleHandle = LoadedModules[MODULE];
             using FunctionType = RetType(*)(Args...);
             FunctionType function = reinterpret_cast<FunctionType>(GetProcAddress(moduleHandle, FUNCTION_NAME));
+        #ifdef LOGGING // Use #define VERBOSE to log verbose types
             MassLogArguments(MODULE, FUNCTION_NAME, args...);
+        #endif // LOG_ARGS
             if (function != nullptr) {
                 return function(args...);
             } else {
@@ -182,6 +184,7 @@
                     // Cast the function pointer to the appropriate type and call it
                     using FunctionType = void(*)();
                     FunctionType func = reinterpret_cast<FunctionType>(function);
+                   
                     func(); 
                 } else {
                     std::cerr << "Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
@@ -200,7 +203,9 @@
                     using FunctionType = RetType(*)(Args...);
                     // Cast the function pointer to the appropriate type
                     FunctionType func = reinterpret_cast<FunctionType>(function);
-                    // Call the function with the provided arguments and return its result
+                #ifdef LOGGING // Use #define VERBOSE to log verbose types
+                        MassLogArguments(MODULE, FUNCTION_NAME, args...);
+                #endif // LOG_ARGS
                     return func(args...);
                 } else {
                     std::cerr << "Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
@@ -210,7 +215,6 @@
             }
             return RetType{};
         }
-        
     #endif // _WIN32
 #endif // DLL_H
 
