@@ -3,14 +3,18 @@
 #define WINDOW_ENUMS
 #define WINDOW_STRUCTS
 #include "Structs.h"
+#include "ThreadManager.h"
 
 class Window final {
 public:
     Window(SWindowData data)  : Data(data), TargetPlatform(TARGET_PLATFORM) {
+        if (TargetPlatform == "Windows") {
+            TargetPlatform = "WIN32_";
+        } else if (TargetPlatform == "Linux") {
+            TargetPlatform = "UNIX_";
+        }
         LoadModule(WINDOW_DLL);
-        WIN32_CALL_MODULE_FUNCTION_ARGS<void, std::string>(WINDOW_DLL, "WIN32_TestMessage", "Testing"); 
-        CallModuleFunc(WINDOW_DLL, "CreateAndRunWindow"); 
-        
+        CallModuleFuncAsync<void>(WINDOW_DLL, "CreateAndRunWindow", WINDOW_PROCESS);
     }
     ~Window() {
         UnloadModule(WINDOW_DLL);
@@ -28,4 +32,5 @@ public:
 private:
     SWindowData Data;
     std::string TargetPlatform;
+    const char* AppendPlatform(std::string stringToAppend);
 };

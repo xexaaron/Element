@@ -8,6 +8,7 @@
 #include <thread>
 #include <type_traits>
 #include <string>
+#include "ThreadManager.h"
     template<typename T>
     std::string LogArgument(const T& arg) {
         return std::to_string(arg);
@@ -45,7 +46,7 @@
         #endif // VERBOSE
     }
     template<typename... Args>
-        std::string LogArgumentTypes(const Args&... args) {
+    std::string LogArgumentTypes(const Args&... args) {
         std::string result;
         ((result += LogArgumentType(args) + " "), ...); 
         return result;
@@ -112,16 +113,34 @@
                 std::cerr << "Error: Trouble unloading module " << MODULE << std::endl;
             }
         }
-        void WIN32_CALL_MODULE_FUNCTION(const char* MODULE, const char* FUNCTION_NAME) {
+        template<typename RetType>
+        RetType WIN32_CALL_MODULE_FUNCTION(const char* MODULE, const char* FUNCTION_NAME) {
             HMODULE moduleHandle = LoadedModules[MODULE];
-            // Define the function pointer type based on the expected function signature
-            using FunctionType = void(*)(); 
-            // Get the address of the function from the loaded module
+            using FunctionType = RetType(*)();
             FunctionType function = reinterpret_cast<FunctionType>(GetProcAddress(moduleHandle, FUNCTION_NAME));
             if (function != nullptr) {
-                function();
+                return function();
             } else {
                 std::cerr << "Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
+                // Return a default value for RetType in case of failure
+                return RetType{};
+            }
+        }
+        template<typename RetType>
+        RetType WIN32_CALL_MODULE_FUNCTION_ASYNC(const char* MODULE, const char* FUNCTION_NAME,  size_t Process) {
+            HMODULE moduleHandle = LoadedModules[MODULE];
+            using FunctionType = RetType(*)();
+            FunctionType function = reinterpret_cast<FunctionType>(GetProcAddress(moduleHandle, FUNCTION_NAME));
+            if (function != nullptr) {
+                #ifdef LOGGING // Use #define VERBOSE to log verbose types
+                    MassLogArguments(MODULE, FUNCTION_NAME, args...);
+                #endif // LOG_ARGS
+                ThreadManager::GetInstance().AddTask(function, Process);
+                return RetType{};
+            } else {
+                std::cerr << "Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
+                // Return a default value for RetType in case of failure
+                return RetType{};
             }
         }
         template<typename RetType, typename... Args>
@@ -136,6 +155,25 @@
                 return function(args...);
             } else {
                 std::cerr << "Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
+                // Return a default value for RetType in case of failure
+                return RetType{};
+            }
+        }
+        template<typename RetType, typename... Args>
+        RetType WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC(const char* MODULE, const char* FUNCTION_NAME, size_t Process, Args... args) {
+            HMODULE moduleHandle = LoadedModules[MODULE];
+            using FunctionType = RetType(*)(Args...);
+            FunctionType function = reinterpret_cast<FunctionType>(GetProcAddress(moduleHandle, FUNCTION_NAME));
+        #ifdef LOGGING // Use #define VERBOSE to log verbose types
+            MassLogArguments(MODULE, FUNCTION_NAME, args...);
+        #endif // LOG_ARGS
+            if (function != nullptr) {
+                ThreadManager::GetInstance().AddTask(function, Process, args...);
+                return RetType{};
+            } else {
+                std::cerr << "Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
+                // Return a default value for RetType in case of failure
+                return RetType{};
             }
         }
     #else // Unix
