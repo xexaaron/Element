@@ -4,6 +4,9 @@
 #include "../config.h"
 #include "Dll.h"
 
+#define FUNCTION_SUCCESS 0
+#define FUNCTION_FAILURE 1
+
 #ifdef _WIN32  
 #include <windows.h>
 #define Super __super
@@ -16,7 +19,6 @@ template<typename... Args>
 void CallModuleFuncWithArgs(const char* MODULE, const char* FUNCTION_NAME, Args... ARGS) {
     WIN32_CALL_MODULE_FUNCTION_ARGS<Args...>(MODULE, FUNCTION_NAME, ARGS...);
 }
-
 #else // UNIX
 #define Super Class
 #define LoadModule(module) UNIX_LOAD_MODULE(module)

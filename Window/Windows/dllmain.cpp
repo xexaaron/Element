@@ -20,76 +20,93 @@ int WindowSizeY = 600;
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-WINDOWDLL_API void WIN32_TestMessage(std::string msg) {
+WINDOWDLL_API int8_t WIN32_TestMessage(std::string msg) {
     
     if (!msg.empty()) {
         std::cout << "Testing Message : " << msg << std::endl;
+        return 0;
     }
-  
+    else {
+        return -1;
+    }
 }
 
-WINDOWDLL_API void WIN32_SetWindowTitle(const char* Title) {
+WINDOWDLL_API int8_t WIN32_SetWindowTitle(const char* Title) {
     if (hWnd) {
-        size_t length = strlen(Title) + 1; // Calculate the length of the string including null terminator
-        // Allocate memory for wide character string
+        size_t length = strlen(Title) + 1;
         wchar_t* l_Title = new wchar_t[(int)length];
-        // Convert narrow character string to wide character string
         MultiByteToWideChar(CP_ACP, 0, Title, -1, l_Title, (int)length);
         SetWindowText(hWnd, l_Title);
         delete[] l_Title;
+        return 0;
     }
     else {
-        std::cerr << "ERROR: Window handle is not valid." << std::endl;
+        return -1;
     }
 }
 
-WINDOWDLL_API void WIN32_SetWindowPosition(int x, int y) {
+WINDOWDLL_API int8_t WIN32_SetWindowPosition(int x, int y) {
     if (hWnd) {
         UINT Flags = SWP_NOSIZE;
         WindowPosX = x;
         WindowPosY = y;
         if (!SetWindowPos(hWnd, hWnd, WindowPosX, WindowPosY, WindowSizeX, WindowSizeY, Flags)) {
             DWORD error = GetLastError();
-            std::cerr << "ERROR: SetWindowPos failed with error code " << error << std::endl;
+            std::cerr << "ERROR: WIN32_SetWindowPosition() -> SetWindowPos() : failed with error code :"<< std::endl << "  " << error << std::endl;
+            return -1;
         }
         else {
             RECT rect;
             GetWindowRect(hWnd, &rect);
             int windowWidth = rect.right - rect.left;
             int windowHeight = rect.bottom - rect.top;
-            // Check Function Success
             if (windowWidth != x || windowHeight != y) {
-                std::cerr << "ERROR: Window resizing failed! Window Position: (" << windowWidth << ", " << windowHeight
-                    << ") != WIN32_SetWindowPosition(" << x << ", " << y << ")" << std::endl;
+                return -1;
+            }
+            else {
+                return 0;
             }
         }
     }
     else {
-        std::cerr << "ERROR: Window handle is not valid." << std::endl;
+        return -1;
     }
 }
 
-WINDOWDLL_API void WIN32_SetWindowSize(int width, int height) {
+WINDOWDLL_API int8_t WIN32_SetWindowSize(int width, int height) {
     if (hWnd) {
         UINT Flags = SWP_NOMOVE;
         WindowSizeX = width;
         WindowSizeY = height;
         if (!SetWindowPos(hWnd, NULL, WindowPosX, WindowPosY, WindowSizeX, WindowSizeY, Flags)) {
             DWORD error = GetLastError();
-            std::cerr << "ERROR: SetWindowPos failed with error code " << error << std::endl;
+            std::cerr << "ERROR: WIN32_SetWindowSize() -> SetWindowPos() : failed with error code :" << std::endl << "    " << error << std::endl;
+            return -1;
         }
     }
     else {
-        std::cerr << "ERROR: Window handle is not valid." << std::endl;
+        return 0;
     }
 }
 
-WINDOWDLL_API void WIN32_SetWindowColor(UINT32 Red, UINT32 Green, UINT32 Blue) {
+WINDOWDLL_API int8_t WIN32_SetWindowColor(UINT32 Red, UINT32 Green, UINT32 Blue) {
     if (hWnd) {
-        // ... (Remaining code remains unchanged)
+        COLORREF newColor = RGB(Red, Green, Blue);
+        LONG_PTR style = GetWindowLongPtr(hWnd, GWL_EXSTYLE);
+        if (style != 0) {
+            SetWindowLongPtr(hWnd, GWL_EXSTYLE, style | WS_EX_LAYERED);
+            SetLayeredWindowAttributes(hWnd, RGB(255, 255, 255), 0, LWA_COLORKEY);
+            SetLayeredWindowAttributes(hWnd, newColor, 0, LWA_COLORKEY);
+            return 0;
+        }
+        else {
+            std::cerr << "ERROR: WIN32_SetWindowColor() -> Failed to get window style." << std::endl;
+            return -1;
+        }
     }
     else {
-        std::cerr << "ERROR: Window handle is not valid." << std::endl;
+        std::cerr << "ERROR: WIN32_SetWindowColor() -> Window handle is not valid." << std::endl;
+        return -1;
     }
 }
 

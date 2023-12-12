@@ -1,3 +1,4 @@
 ﻿  dllmain.cpp
+D:\GithubRepositories\Element\Window\Windows\dllmain.cpp(90): warning C4715: 'WIN32_SetWindowSize': not all control paths return a value
      Creating library D:\GithubRepositories\Element\Window\Windows\x64\Debug\Window.lib and object D:\GithubRepositories\Element\Window\Windows\x64\Debug\Window.exp
   Window.vcxproj -> D:\GithubRepositories\Element\Window\Windows\x64\Debug\Window.dll
