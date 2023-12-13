@@ -1,3 +1,4 @@
 ﻿  dllmain.cpp
+  LINK : D:\GithubRepositories\Element\Window\Windows\x64\Debug\Window.dll not found or not built by the last incremental link; performing full link
      Creating library D:\GithubRepositories\Element\Window\Windows\x64\Debug\Window.lib and object D:\GithubRepositories\Element\Window\Windows\x64\Debug\Window.exp
   Window.vcxproj -> D:\GithubRepositories\Element\Window\Windows\x64\Debug\Window.dll

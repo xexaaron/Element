@@ -2,6 +2,9 @@
 #include "include/Logger.h"
 #include <iostream>
 #include <string>
+#include <cmath> 
+#include <chrono> 
+
 
 void LogProgramBegin() {
     for (int i = 0; i < 100; ++i) {
@@ -22,8 +25,7 @@ Window* CreateBasicWindow() {
 
 void SetWindowDefaults(Window* window) {
     window->SetBackgroundColor(Vector3D<uint32_t>(250, 0, 0));
-    window->SetPosition(Vector2D<int>(50, 50));
-    window->SendTestMessageToWindow("Testing Message");
+    
 }
 
 int main() {
@@ -33,7 +35,9 @@ int main() {
     Window* ProgramWindow = CreateBasicWindow();
     ThreadManager::GetInstance().ExecuteTasks(WINDOW_PROCESS);
     SetWindowDefaults(ProgramWindow);
+    
     ThreadManager::GetInstance().ExecuteTasks(MAIN_PROCESS);
+    printf("test"); 
     return 0;
 }
 

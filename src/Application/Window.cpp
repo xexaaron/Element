@@ -38,12 +38,13 @@ bool Window::SetBackgroundColor(Vector3D<uint32_t> color) {
     WINDOW_DLL, AppendPlatform("SetWindowColor"), MAIN_PROCESS, color.x, color.y, color.z);
     if (result == FUNCTION_SUCCESS) {
         Data.BackgroundColor = color;
-    
+    #ifdef LOGGING
+        Logger::Log(stdout, LogType::ASYNC_TASK, MAIN_PROCESS, "Window::SetBackgroundColor(Vector3D<uint32_t>) -> FUNCTION_SUCCESS");
+    #endif // LOGGING
         return true;
     } else if (result == FUNCTION_FAILURE) {
     #ifdef LOGGING
-        printf("ERROR :    Function : Window::SetBackgroundColor(%u,%u,%u)\n                  %s\n                 Window Manager is NULL\n",
-               color.x, color.y, color.z, WINDOW_DLL);
+        Logger::Log(stderr, LogType::ASYNC_TASK, MAIN_PROCESS, "Window::SetBackgroundColor(Vector3D<uint32_t>) -> FUNCTION_FAILURE && WM_NULL ");  
     #endif // LOGGING
         return false;
     }

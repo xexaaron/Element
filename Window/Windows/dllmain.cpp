@@ -31,6 +31,7 @@ WINDOWDLL_API int8_t WINTestMessage(std::string msg) {
     else {
         return -1;
     }
+    std::cout << "STATUS              : WINTestMessage -> FUNCTION_SUCCESS" << std::endl;
     return 0;
 }
 
@@ -41,6 +42,7 @@ WINDOWDLL_API int8_t WINSetWindowTitle(const char* Title) {
     else {
         return -1;
     }
+    std::cout << "STATUS              : WINSetWindowTitle -> FUNCTION_SUCCESS" << std::endl;
     return 0;
 }
 WINDOWDLL_API int8_t WINSetWindowPosition(int x, int y) {
@@ -51,6 +53,7 @@ WINDOWDLL_API int8_t WINSetWindowPosition(int x, int y) {
     else {
         return -1;
     }
+    std::cout << "STATUS              : WINSetWindowPosition -> FUNCTION_SUCCESS" << std::endl;
     return 0;
 }
 
@@ -71,6 +74,7 @@ WINDOWDLL_API int8_t WINSetWindowColor(uint32_t Red, uint32_t Green, uint32_t Bl
     } else {
         return -1;
     }
+    std::cout << "STATUS              : WINSetWindowColor -> FUNCTION_SUCCESS" << std::endl;
     return 0;
 }
 
@@ -83,6 +87,7 @@ WINDOWDLL_API int8_t WINSetWindowState(EWindowState state) {
     else {
         return -1;
     }
+    std::cout << "STATUS              : WINSetWindowState -> FUNCTION_SUCCESS" << std::endl;
     return 0;
 }
 
