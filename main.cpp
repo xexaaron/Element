@@ -4,7 +4,7 @@
 #include <string>
 
 void LogProgramBegin() {
-    for (int i = 0; i < 20; ++i) {
+    for (int i = 0; i < 100; ++i) {
         std::cout << std::endl;
     }
     Logger::Log(stdout, LogType::LOG, 0, "Console Flushed");
