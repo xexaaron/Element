@@ -37,8 +37,8 @@ while [ "$1" != "" ]; do
 done
 
 echo "[Build - %buildConf] [true]"
-echo "[Flag - Logging] [${loggingFlag}]"
-echo "[Flag - Verbose] : [${verboseFlag}]"
+echo "[Flag - Logging]  [${loggingFlag}]"
+echo "[Flag - Verbose]  [${verboseFlag}]"
 
 # Build Core Module and the Core Module dependencies
 echo ""

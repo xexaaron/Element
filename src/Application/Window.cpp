@@ -6,46 +6,97 @@ const char* Window::AppendPlatform(std::string stringToAppend) {
     std::strcpy(value, temp.c_str()); 
     return value;
 }
-
+bool Window::SetBackgroundColor(Vector3D<UINT32> color) {
+    int8_t result = 0;
+    result = CallModuleFuncWithArgsAsync<int8_t, UINT32, UINT32, UINT32>(WINDOW_DLL, AppendPlatform("SetWindowColor"), WINDOW_PROCESS, color.x, color.y, color.z);
+    if (result == 0) {
+        Data.BackgroundColor = color;
+        return true;
+    } else if (result == -1) {
+    #ifdef LOGGING
+        printf("ERROR :\n    Function : Window::SetBackgroundColor(%u,%u,%u)\n    %s\n    Window Manager is NULL\n", color.x, color.y, color.z, WINDOW_DLL);
+    #endif // LOGGING
+        return false;
+    }
+    return true;
+}
+bool Window::SetTitle(const char* title) {
+    int8_t result = 0;
+    result = CallModuleFuncWithArgsAsync<int8_t, const char*>(WINDOW_DLL, AppendPlatform("SetWindowTitle"), WINDOW_PROCESS, title);
+    if (result == 0) {
+        Data.Title = title;
+        return true;
+    } else if (result == -1) {
+    #ifdef LOGGING
+        printf("ERROR :\n    Function : Window::SetTitle(%s)\n    %s\n    Window Manager is NULL\n", title, WINDOW_DLL);
+    #endif // LOGGING
+        return false;
+    }
+    return true;
+}
 bool Window::SetState(EWindowState state) {
-    Data.State = state;
+    int8_t result = 0;
+    result = CallModuleFuncWithArgsAsync<int8_t, EWindowState>(WINDOW_DLL, AppendPlatform("SetWindowState"), WINDOW_PROCESS, state);
+    if (result == 0) {
+        Data.State = state;
+        return true;
+    } else if (result == -1) {
+    #ifdef LOGGING
+        printf("ERROR :\n    Function : Window::SetState(%i)\n    %s\n    Window Manager is NULL\n", state, WINDOW_DLL);
+    #endif // LOGGING
+        return false;
+    }
     return true;
 } 
 bool Window::SetPosition(Vector2D<int> position) {
-    uint8_t result = CallModuleFuncWithArgs<uint8_t, int, int>(WINDOW_DLL, AppendPlatform("SetWindowPosition"), position.x, position.y);
-    if (result = 0) {
-        Data.Position = position;
+    int8_t result = 0;
+    result = CallModuleFuncWithArgsAsync<int8_t, int, int>(WINDOW_DLL, AppendPlatform("SetWindowPosition"), WINDOW_PROCESS, position.x, position.y);
+    if (result == 0) {
+        Data.Position == position;
         return true;
     } else if (result = -1) {
+    #ifdef LOGGING
+        printf("ERROR :\n    Function : Window::SetPosition(%i,%i)\n    %s\n    Window Manager is NULL\n", position.x, position.y, WINDOW_DLL);
+    #endif // LOGGING
         return false;
     }
+    return true;
 }
 bool Window::SetSize(Vector2D<int> size) {
-    uint8_t result = CallModuleFuncWithArgs<uint8_t, int, int>(WINDOW_DLL, AppendPlatform("SetWindowSize"), size.x, size.y);
-    if (result = 0) {
+    int8_t result = 0;
+    result = CallModuleFuncWithArgsAsync<int8_t, int, int>(WINDOW_DLL, AppendPlatform("SetWindowSize"), WINDOW_PROCESS, size.x, size.y);
+    if (result == 0) {
         Data.Size = size;
         return true;
-    } else if (result = -1) {
+    } else if (result == -1) {
+    #ifdef LOGGING
+        printf("ERROR :\n    Function : Window::SetSize(%d,%d)\n    %s\n    Window Manager is NULL\n", size.x, size.y, WINDOW_DLL);
+    #endif // LOGGING
         return false;
     }
+    return true;
 }
 bool Window::SetData(SWindowData data) {
-    if (this->SetPosition(data.Position) && this->SetSize(data.Size) && this->SetState(data.State)) {
-        return true;
-    } else {
+    if (!(this->SetPosition(data.Position) && this->SetSize(data.Size) && this->SetState(data.State))) {
+    #ifdef LOGGING
+        printf("ERROR :\n    Function : Window::SetData(%s,%i,{%u,%u,%u},{%i,%i},{%i,%i})\n    %s\n    Window Manager is NULL\n",
+        data.Title.c_str(), Data.State, Data.BackgroundColor.x, Data.BackgroundColor.y, Data.BackgroundColor.z,
+        Data.Position.x, Data.Position.y, Data.Size.x, Data.Size.y, WINDOW_DLL);
+    #endif // LOGGING
         return false;
     }
+    return true;
 }
 
 Vector2D<int> Window::GetPosition() {
-    return Data.Position;
+    return Vector2D<int>(Data.Position.x, Data.Position.y);
 }
 Vector2D<int> Window::GetSize() {
-    return Data.Size;
+    return Vector2D<int>(Data.Size.x, Data.Size.y);
 }
 EWindowState Window::GetWindowState() {
-    return Data.State;
+    return EWindowState(Data.State);
 }
 SWindowData Window::GetData() {
-    return Data;
+    return SWindowData(Data);
 }

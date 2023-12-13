@@ -27,8 +27,8 @@ goto :ProcessArgs
 
 :ContinueBuild
 echo [Build - %buildConfig%] [true]
-echo [Flag - Logging] [%loggingFlag%]
-echo [Flag - Verbose] : [%verboseFlag%]
+echo [Flag - Logging]  [%loggingFlag%]
+echo [Flag - Verbose]  [%verboseFlag%]
 echo.
 echo Building Executable: %projName% [%buildConfig%]
 echo.

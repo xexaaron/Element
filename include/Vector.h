@@ -1,5 +1,4 @@
-#ifndef VECTOR_HPP
-#define VECTOR_HPP
+#pragma once
 
 #include <iostream>
 #include <stdexcept>
@@ -328,4 +327,3 @@ struct Vector4D {
     }
 };
 
-#endif // VECTOR_HPP

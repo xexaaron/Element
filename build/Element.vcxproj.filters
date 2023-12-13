@@ -7,6 +7,9 @@
     <ClCompile Include="D:\GithubRepositories\Element\src\Base\Class.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="D:\GithubRepositories\Element\src\Application\Window.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="D:\GithubRepositories\Element\src\Global\IO.hpp">

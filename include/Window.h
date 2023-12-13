@@ -1,9 +1,8 @@
 #pragma once
 #include "Platform.h"
-#define WINDOW_ENUMS
-#define WINDOW_STRUCTS
 #include "Structs.h"
-#include "ThreadManager.h"
+
+#define WINDOW_PROCESS 0
 
 class Window final {
 public:
@@ -24,7 +23,11 @@ public:
     bool SetPosition(Vector2D<int> Position);
     bool SetSize(Vector2D<int> Size);
     bool SetData(SWindowData Data);
+    bool SetTitle(const char* Title);
+    bool SetBackgroundColor(Vector3D<UINT32> Color); 
 
+    Vector3D<UINT32> GetBackgroundColor();
+    const char* GetTitle();
     Vector2D<int> GetPosition();
     Vector2D<int> GetSize();
     EWindowState GetWindowState();
