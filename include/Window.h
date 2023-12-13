@@ -6,19 +6,10 @@
 
 class Window final {
 public:
-    Window(SWindowData data)  : Data(data), TargetPlatform(TARGET_PLATFORM) {
-        if (TargetPlatform == "Windows") {
-            TargetPlatform = "WIN";
-        } else if (TargetPlatform == "Linux") {
-            TargetPlatform = "UNIX";
-        }
-        LoadModule(WINDOW_DLL);
-        CallModuleFuncAsync<void>(WINDOW_DLL, "CreateAndRunWindow", WINDOW_PROCESS);
-    }
-    ~Window() {
-        UnloadModule(WINDOW_DLL);
-    }
+    Window(SWindowData data);
+    ~Window();
     
+    bool SendTestMessageToWindow(std::string Message);
     bool SetState(EWindowState State);
     bool SetPosition(Vector2D<int> Position);
     bool SetSize(Vector2D<int> Size);

@@ -9,7 +9,7 @@
 #include <string>
 #include "ThreadManager.h"
 #include <concepts>
-
+#include <sstream>
 // Just wanted to try out concepts
 template<typename T>
 concept StringType = std::is_convertible_v<T, std::string>;
@@ -29,8 +29,17 @@ inline std::string LogArgument(const std::basic_string<T>& arg) {
 template<typename... Args>
 inline std::string LogArguments(const Args&... args) {
     std::string result;
-    ((result += LogArgument(args) + ", "), ...); // Concatenate arguments with spaces
+    size_t count = 0;
+    size_t argumentsCount = sizeof...(Args);
+    ((result += LogArgument(args) + (++count != argumentsCount ? ", " : "")), ...);
     return result;
+}
+template<typename... Args>
+void LogArgumentsAndTypes(const Args&... args) {
+   
+    int dummy[] = {0, ((void)(std::cerr << "(" << LogArgumentType(args) << ")" << args << " "), 0)...};
+    (void)dummy;
+    
 }
 template<typename T>
 inline std::string LogArgumentType(const T&) {
@@ -54,6 +63,38 @@ inline std::string LogArgumentType(const T&) {
         }
     #endif // VERBOSE
 }
+#ifdef VERBOSE
+        template<>
+    inline std::string LogArgumentType<uint8_t>(const uint8_t&) {
+        return "uint8_t";
+    }
+
+    template<>
+    inline std::string LogArgumentType<uint16_t>(const uint16_t&) {
+        return "uint16_t";
+    }
+
+    template<>
+    inline std::string LogArgumentType<uint32_t>(const uint32_t&) {
+        return "uint32_t";
+    }
+
+    // Specializations for signed integers
+    template<>
+    inline std::string LogArgumentType<int8_t>(const int8_t&) {
+        return "int8_t";
+    }
+
+    template<>
+    inline std::string LogArgumentType<int16_t>(const int16_t&) {
+        return "int16_t";
+    }
+
+    template<>
+    inline std::string LogArgumentType<int32_t>(const int32_t&) {
+        return "int32_t";
+    }
+#endif // VERBOSE
 template<typename... Args>
 inline std::string LogArgumentTypes(const Args&... args) {
     std::string result;
@@ -66,10 +107,10 @@ inline void MassLogArguments(const char* moduleName, const char* functionName, A
     size_t lastSlashPos = std::string(moduleName).find_last_of('/');
     if (lastSlashPos != std::string::npos) {
         std::string moduleNameSubstring = std::string(moduleName).substr(lastSlashPos + 1);
-        std::cerr << "Function Call   : WIN32_CALL_MODULE_FUNCTION_ARGS("
+        std::cerr << "---- NON ASYNC TASK : WIN32_CALL_MODULE_FUNCTION_ARGS("
                 << moduleNameSubstring << ", " << functionName << ", " << LogArguments(args...) << ")" << std::endl;
     } else {
-        std::cerr << "Function Call   : WIN32_CALL_MODULE_FUNCTION_ARGS("
+        std::cerr << "---- NON ASYNC TASK : WIN32_CALL_MODULE_FUNCTION_ARGS("
                 << moduleName << ", " << functionName << ", " << LogArguments(args...) << ")" << std::endl;
     }
 
@@ -86,29 +127,34 @@ inline void MassLogArguments(const char* moduleName, const char* functionName, A
     std::cerr << std::endl;
 }
 template<typename... Args>
-inline void MassLogArgumentsAsync(const char* moduleName, const char* functionName, Args... args) {
-    // Log the function call
+void MassLogArgumentsAsync(const char* moduleName, size_t TaskID, size_t process, const char* functionName, Args... args) {
+    std::ostringstream logStream;
+#ifdef VERBOSE 
+     logStream << "---- ASYNC TASK [" << TaskID << "]  : " << "WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC("
+    << moduleName << ", " << functionName << ", ";
+#else 
     size_t lastSlashPos = std::string(moduleName).find_last_of('/');
     if (lastSlashPos != std::string::npos) {
         std::string moduleNameSubstring = std::string(moduleName).substr(lastSlashPos + 1);
-        std::cerr << "Function Call   : WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC("
-                << moduleNameSubstring << ", " << functionName << ", " << LogArguments(args...) << ")" << std::endl;
+        logStream << "---- ASYNC TASK [" << TaskID << "]  : " << "WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC("
+                  << moduleNameSubstring << ", " << functionName << ", ";
     } else {
-        std::cerr << "Function Call   : WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC("
-                << moduleName << ", " << functionName << ", " << LogArguments(args...) << ")" << std::endl;
+        logStream << "---- ASYNC TASK [" << TaskID << "]  : " << "WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC("
+                  << moduleName << ", " << functionName << ", ";
     }
+#endif // VERBOSE
+    
 
-    // Log Argument Types
-    std::cerr << "Argument Types  : ";
-    int dummy2[] = {0, ((void)(std::cerr << LogArgumentType(args) << " "), 0)...};
-    (void)dummy2;
-    std::cerr << std::endl;
+    // Concatenate argument types and values
+    size_t argCount = sizeof...(Args);
+    size_t i = 0;
+    ((logStream << "(" << LogArgumentType(args) << ")" << args << (i != argCount - 1 ? ", " : ""), ++i), ...);
 
-    // Log Arguments
-    std::cerr << "Arguments       : ";
-    int dummy3[] = {0, ((void)(std::cerr << args << " "), 0)...};
-    (void)dummy3;
-    std::cerr << std::endl;
+    logStream << ")" << std::endl;
+
+    // Print the constructed log
+    std::cerr << logStream.str();
+    
 }
 #ifdef _WIN32
 #include <windows.h>
@@ -116,7 +162,7 @@ inline static std::map<const char*, HINSTANCE> LoadedModules;
 inline void WIN32_LOAD_MODULE(const char* libPath) {
     HINSTANCE handle = LoadLibraryA(libPath);
     if (!handle) {
-        std::cerr << "ERROR  : Failed to load the DLL: " << GetLastError() << std::endl;
+        std::cerr << "ERROR  : --Failed to load the DLL: " << GetLastError() << std::endl;
         // Handle error condition
     } else {
         LoadedModules[libPath] = handle;
@@ -147,20 +193,18 @@ inline void WIN32_UNLOAD_MODULE(const char* MODULE) {
         std::cerr << "ERROR  : Trouble unloading module " << MODULE << std::endl;
     }
 }
-
 template<typename RetType>
 inline RetType WIN32_CALL_MODULE_FUNCTION(const char* MODULE, const char* FUNCTION_NAME) {
     HMODULE moduleHandle = LoadedModules[MODULE];
     using FunctionType = RetType(*)();
     FunctionType function = reinterpret_cast<FunctionType>(GetProcAddress(moduleHandle, FUNCTION_NAME));
-    if (function != nullptr) {
 #ifdef LOGGING
     size_t lastSlashPos = std::string(MODULE).find_last_of('/');
     std::string moduleNameSubstring = std::string(MODULE).substr(lastSlashPos + 1);
-    std::cerr << "Function Call   : WIN32_CALL_MODULE_FUNCTION("
+    std::cerr << "---- NON ASYNC TASK : WIN32_CALL_MODULE_FUNCTION("
     << moduleNameSubstring << ", " << FUNCTION_NAME << ")" << std::endl;
-    printf("Return Type     : %s\n\n", typeid(RetType).name()); 
-#endif // LOG_ARGS    
+#endif // LOGGING
+    if (function != nullptr) {
         return function();
     } else {
         std::cerr << "ERROR  : Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
@@ -174,15 +218,17 @@ inline RetType WIN32_CALL_MODULE_FUNCTION_ASYNC(const char* MODULE, const char* 
     using FunctionType = RetType(*)();
     FunctionType function = reinterpret_cast<FunctionType>(GetProcAddress(moduleHandle, FUNCTION_NAME));
     if (function != nullptr) {
-#ifdef LOGGING
-    size_t lastSlashPos = std::string(MODULE).find_last_of('/');
-    std::string moduleNameSubstring = std::string(MODULE).substr(lastSlashPos + 1);
-    std::cerr << "Function Call   : WIN32_CALL_MODULE_FUNCTION_ASYNC("
-    << moduleNameSubstring << ", " << FUNCTION_NAME << ")" << std::endl;
-    printf("Return Type     : %s\n\n", typeid(RetType).name()); 
-#endif // LOG_ARGS       
-        ThreadManager::GetInstance().AddTask(function, Process);
-        return RetType(0);
+    #ifdef LOGGING
+        size_t TaskID = ThreadManager::GetInstance().GetTaskCount(Process);
+        auto lambda = [MODULE, TaskID, FUNCTION_NAME, Process]() {
+            size_t lastSlashPos = std::string(MODULE).find_last_of('/');
+            std::string moduleNameSubstring = std::string(MODULE).substr(lastSlashPos + 1);
+            std::cerr << "---- ASYNC TASK [" << TaskID << "]  : " << "WIN32_CALL_MODULE_FUNCTION_ASYNC(" << moduleNameSubstring << ", " << FUNCTION_NAME << ")" << std::endl;
+        };
+        ThreadManager::GetInstance().AddTask(function, Process, lambda);
+    #else 
+        ThreadManager::GetInstance().AddTaskNoLog(function, Process);
+    #endif // LOGGING
     } else {
         std::cerr << "ERROR  : Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
         // Return a default value for RetType in case of failure
@@ -194,10 +240,9 @@ inline RetType WIN32_CALL_MODULE_FUNCTION_ARGS(const char* MODULE, const char* F
     HMODULE moduleHandle = LoadedModules[MODULE];
     using FunctionType = RetType(*)(Args...);
     FunctionType function = reinterpret_cast<FunctionType>(GetProcAddress(moduleHandle, FUNCTION_NAME));
-#ifdef LOGGING // Use #define VERBOSE to log verbose types
+#ifdef LOGGING
     MassLogArguments(MODULE, FUNCTION_NAME, args...);
-    printf("Return Type     : %s\n\n", typeid(RetType).name()); 
-#endif // LOG_ARGS
+#endif // LOGGING
     if (function != nullptr) {
         return function(args...);
     } else {
@@ -211,12 +256,18 @@ inline RetType WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC(const char* MODULE, const c
     HMODULE moduleHandle = LoadedModules[MODULE];
     using FunctionType = RetType(*)(Args...);
     FunctionType function = reinterpret_cast<FunctionType>(GetProcAddress(moduleHandle, FUNCTION_NAME));
-#ifdef LOGGING // Use #define VERBOSE to log verbose types
-    MassLogArgumentsAsync(MODULE, FUNCTION_NAME, args...);
-    printf("Return Type     : %s\n\n", typeid(RetType).name()); 
-#endif // LOG_ARGS
+
     if (function != nullptr) {
-        ThreadManager::GetInstance().AddTask(function, Process, args...);
+    #ifdef LOGGING
+        size_t TaskID = ThreadManager::GetInstance().GetTaskCount(Process);
+        auto lambda = [MODULE, TaskID, Process, FUNCTION_NAME, args...](){
+            MassLogArgumentsAsync(MODULE, TaskID, Process, FUNCTION_NAME, args...);
+        };
+        ThreadManager::GetInstance().AddTask(function, Process, lambda,  args...);
+    #else 
+        ThreadManager::GetInstance().AddTaskNoLog(function, Process,  args...);
+    #endif // LOGGING
+       
         return RetType(0);
     } else {
         std::cerr << "ERROR  : Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
@@ -273,7 +324,7 @@ inline RetType WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC(const char* MODULE, const c
                 
                 func(); 
             } else {
-                std::cerr << "ERROR  : Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
+                std::cerr << "ERROR  : --Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
             }
         } else {
             std::cerr << "Module '" << MODULE << "' not found." << std::endl;
@@ -294,7 +345,7 @@ inline RetType WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC(const char* MODULE, const c
             #endif // LOG_ARGS
                 return func(args...);
             } else {
-                std::cerr << "ERROR  : Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
+                std::cerr << "ERROR  : --Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
             }
         } else {
             std::cerr << "Module '" << MODULE << "' not found." << std::endl;

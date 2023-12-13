@@ -1,32 +1,57 @@
 #include "../../include/Window.h"
 
+
+Window::Window(SWindowData data)  : Data(data), TargetPlatform(TARGET_PLATFORM) {
+        if (TargetPlatform == "Windows") {
+            TargetPlatform = "WIN";
+        } else if (TargetPlatform == "Linux") {
+            TargetPlatform = "UNIX";
+        }
+        LoadModule(WINDOW_DLL);
+        CallModuleFuncAsync<void>(WINDOW_DLL, "CreateAndRunWindow", WINDOW_PROCESS);
+}
+
+Window::~Window() {
+    UnloadModule(WINDOW_DLL);
+}
+
 const char* Window::AppendPlatform(std::string stringToAppend) {
     std::string temp = TargetPlatform + stringToAppend; 
     char* value = new char[temp.length() + 1]; 
     std::strcpy(value, temp.c_str()); 
     return value;
 }
-bool Window::SetBackgroundColor(Vector3D<uint32_t> color) {
-    int8_t result = CallModuleFuncWithArgs<int8_t, uint32_t, uint32_t, uint32_t>(
-    WINDOW_DLL, AppendPlatform("SetWindowColor"), color.x, color.y, color.z);
 
+bool Window::SendTestMessageToWindow(std::string Message) {
+    int8_t result = CallModuleFuncWithArgsAsync<int8_t, std::string>(WINDOW_DLL, AppendPlatform("TestMessage"), MAIN_PROCESS, Message);
+    if (result != 0) {
+        std::cerr << "ERROR          : " << "Message [`" << Message << "`]" << " was not sent" << std::endl; 
+        return false;
+    } else {
+        return true;
+    }
+    return true;
+}
+
+bool Window::SetBackgroundColor(Vector3D<uint32_t> color) {
+    int8_t result = CallModuleFuncWithArgsAsync<int8_t, uint32_t, uint32_t, uint32_t>(
+    WINDOW_DLL, AppendPlatform("SetWindowColor"), MAIN_PROCESS, color.x, color.y, color.z);
     if (result == FUNCTION_SUCCESS) {
         Data.BackgroundColor = color;
+    
         return true;
     } else if (result == FUNCTION_FAILURE) {
     #ifdef LOGGING
-        printf("ERROR :\n    Function : Window::SetBackgroundColor(%u,%u,%u)\n    %s\n    Window Manager is NULL\n",
+        printf("ERROR :    Function : Window::SetBackgroundColor(%u,%u,%u)\n                  %s\n                 Window Manager is NULL\n",
                color.x, color.y, color.z, WINDOW_DLL);
     #endif // LOGGING
         return false;
     }
-
-    // Handle other potential error conditions here, if needed
-
-    return true; // Or return false if none of the conditions match your expected results
+   
+    return true; 
 }
 bool Window::SetTitle(const char* title) {
-    int8_t result = CallModuleFuncWithArgs<int8_t, const char*>(WINDOW_DLL, AppendPlatform("SetWindowTitle"), title);
+    int8_t result = CallModuleFuncWithArgsAsync<int8_t, const char*>(WINDOW_DLL, AppendPlatform("SetWindowTitle"), MAIN_PROCESS, title);
     if (result == FUNCTION_SUCCESS) {
         Data.Title = title;
         return true;
@@ -40,7 +65,7 @@ bool Window::SetTitle(const char* title) {
 }
 bool Window::SetState(EWindowState state) {
     int8_t result = 0;
-    result = CallModuleFuncWithArgs<int8_t, EWindowState>(WINDOW_DLL, AppendPlatform("SetWindowState"), state);
+    result = CallModuleFuncWithArgsAsync<int8_t, EWindowState>(WINDOW_DLL, AppendPlatform("SetWindowState"), MAIN_PROCESS, state);
     if (result == FUNCTION_SUCCESS) {
         Data.State = state;
         return true;
@@ -54,7 +79,7 @@ bool Window::SetState(EWindowState state) {
 } 
 
 bool Window::SetPosition(Vector2D<int> position) {
-    int8_t result = CallModuleFuncWithArgs<int8_t, int, int>(WINDOW_DLL, AppendPlatform("SetWindowPosition"), position.x, position.y);
+    int8_t result = CallModuleFuncWithArgsAsync<int8_t, int, int>(WINDOW_DLL, AppendPlatform("SetWindowPosition"), MAIN_PROCESS, position.x, position.y);
     if (result == FUNCTION_SUCCESS) {
         Data.Position == position;
         return true;
@@ -67,8 +92,7 @@ bool Window::SetPosition(Vector2D<int> position) {
     return true;
 }
 bool Window::SetSize(Vector2D<int> size) {
-    int8_t result = 0;
-    result = CallModuleFuncWithArgs<int8_t, int, int>(WINDOW_DLL, AppendPlatform("SetWindowSize"), size.x, size.y);
+    int8_t result = CallModuleFuncWithArgsAsync<int8_t, int, int>(WINDOW_DLL, AppendPlatform("SetWindowSize"), MAIN_PROCESS, size.x, size.y);
     if (result == FUNCTION_SUCCESS) {
         Data.Size = size;
         return true;
