@@ -1,11 +1,17 @@
 #pragma once
-
+#include "Window.h"
+#include "../config.h"
+#include <cstdlib>
 class Application final {
 public:
-    static void Initialize();
-
+    Application();
+    ~Application();
+    void CreateDefaultWindow();
+    Window* GetWindow();
+    void ApplicationLoop();
+    bool IsRunning;
 private:
-    static bool IsRunning;
-
+    
+    Window* AppWindow;
 };
 

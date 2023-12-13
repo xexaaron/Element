@@ -22,3 +22,4 @@ extern "C" WINDOWDLL_API int8_t WINSetWindowState(EWindowState state);
 extern "C" WINDOWDLL_API int8_t WINSetWindowColor(uint32_t Red, uint32_t Green, uint32_t Blue);
 extern "C" WINDOWDLL_API int8_t WINSetWindowSize(int x, int y);
 extern "C" WINDOWDLL_API int8_t WINSetWindowPosition(int x, int y);
+extern "C" WINDOWDLL_API int ProcessWindowMessages();

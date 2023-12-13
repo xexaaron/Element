@@ -2,6 +2,9 @@
 #include "include/Logger.h"
 #include <iostream>
 #include <string>
+#include <cmath> 
+#include <chrono> 
+
 
 void LogProgramBegin() {
     for (int i = 0; i < 100; ++i) {
@@ -12,28 +15,27 @@ void LogProgramBegin() {
     std::cout << std::endl;
 }
 
-Window* CreateBasicWindow() {
-    SWindowData Data;
-    Data.Size = Vector2D<int>{800, 600};
-    Data.Position = Vector2D<int>{0, 0};
-    Data.State = EWindowState::FULLSCREEN;
-    return new Window(Data); 
-}
 
-void SetWindowDefaults(Window* window) {
-    window->SetBackgroundColor(Vector3D<uint32_t>(250, 0, 0));
-    window->SetPosition(Vector2D<int>(50, 50));
-    window->SendTestMessageToWindow("Testing Message");
-}
 
 int main() {
 #ifdef LOGGING // Clear Console
     LogProgramBegin();
 #endif // LOGGING
-    Window* ProgramWindow = CreateBasicWindow();
-    ThreadManager::GetInstance().ExecuteTasks(WINDOW_PROCESS);
-    SetWindowDefaults(ProgramWindow);
-    ThreadManager::GetInstance().ExecuteTasks(MAIN_PROCESS);
+   
+    SWindowData Data;
+    Data.Size = Vector2D<int>{800, 600};
+    Data.Position = Vector2D<int>{0, 0};
+    Data.State = EWindowState::FULLSCREEN;
+    Window* AppWindow = new Window(Data);
+   
+    if (AppWindow) {
+        AppWindow->SetTitle("Title");
+        AppWindow->SetPosition(Vector2D<int>(0, 0));
+        AppWindow->SetSize(Vector2D<int>(5, 5));
+    }
+     
+    ThreadManager::GetInstance().ExecuteProcesses();
+    ThreadManager::GetInstance().WaitAll();
     return 0;
 }
 

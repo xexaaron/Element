@@ -27,6 +27,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 WINDOWDLL_API int8_t WINTestMessage(std::string msg) {
     if (!msg.empty()) {
         MessageBoxA(NULL, msg.c_str(), "Test Message", MB_OK);
+        return 1;
     }
     else {
         return -1;
@@ -37,6 +38,7 @@ WINDOWDLL_API int8_t WINTestMessage(std::string msg) {
 WINDOWDLL_API int8_t WINSetWindowTitle(const char* Title) {
     if (hWnd) {
         PostMessage(hWnd, WIN32_EVENT_SET_WINDOW_TITLE, 0, (LPARAM)Title);
+        return 1;
     }
     else {
         return -1;
@@ -47,6 +49,7 @@ WINDOWDLL_API int8_t WINSetWindowPosition(int x, int y) {
     if (hWnd) {
         LPARAM Pos = MAKELPARAM(static_cast<WORD>(x), static_cast<WORD>(y));
         PostMessage(hWnd, WIN32_EVENT_SET_WINDOW_POSITION, 0, Pos);
+        return 1;
     }
     else {
         return -1;
@@ -58,6 +61,7 @@ WINDOWDLL_API int8_t WINSetWindowSize(int x, int y) {
     if (hWnd) {
         LPARAM Size = MAKELPARAM(static_cast<WORD>(x), static_cast<WORD>(y));
         PostMessage(hWnd, WIN32_EVENT_SET_WINDOW_SIZE, 0, Size);
+        return 1;
     } else {
         return -1;
     }
@@ -68,6 +72,7 @@ WINDOWDLL_API int8_t WINSetWindowColor(uint32_t Red, uint32_t Green, uint32_t Bl
     if (hWnd) {
         COLORREF Color = RGB(Red, Green, Blue);
         PostMessage(hWnd, WIN32_EVENT_SET_WINDOW_COLOR, 0, (LPARAM)Color);
+        return 1;
     } else {
         return -1;
     }
@@ -79,6 +84,7 @@ WINDOWDLL_API int8_t WINSetWindowColor(uint32_t Red, uint32_t Green, uint32_t Bl
 WINDOWDLL_API int8_t WINSetWindowState(EWindowState state) {
     if (hWnd) {
         PostMessage(hWnd, WIN32_EVENT_SET_WINDOW_STATE, 0, (LPARAM)state);
+        return 1;
     }
     else {
         return -1;
@@ -86,7 +92,8 @@ WINDOWDLL_API int8_t WINSetWindowState(EWindowState state) {
     return 0;
 }
 
-WINDOWDLL_API int CreateAndRunWindow() {
+WINDOWDLL_API HWND CreateMainWindow() {
+    std::cout << "Created window from Element.obj in Window.dll" << std::endl;
     hInst = GetModuleHandle(NULL);
     WNDCLASSEXW wcex = { sizeof(WNDCLASSEXW) };
     wcex.style = CS_HREDRAW | CS_VREDRAW;
@@ -99,17 +106,26 @@ WINDOWDLL_API int CreateAndRunWindow() {
     hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
         WindowSizeX, WindowSizeY, NULL, NULL, hInst, NULL);
     if (!hWnd) {
-        return 0;
+        return NULL;
     }
     ShowWindow(hWnd, SW_SHOW);
     UpdateWindow(hWnd);
+    ProcessWindowMessages();
+    return hWnd;
+}
 
+WINDOWDLL_API int ProcessWindowMessages() {
     MSG msg;
-    while (GetMessage(&msg, NULL, 0, 0)) {
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
+    BOOL bRet;
+    while ((bRet = GetMessage(&msg, hWnd, 0, 0)) != 0) {
+        if (bRet == -1) {
+            std::cerr << "ERROR            : Window.dll -> ProcessWindowMessages() -> GetMessage == NULL" << std::endl;
+        }
+        else {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg); // This line sends messages to WndProc
+        }
     }
-
     return (int)msg.wParam;
 }
 
@@ -117,28 +133,33 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
     switch (message) {
     case WM_DESTROY:
         PostQuitMessage(0);
+        std::exit(0);
+        
         break;
     case WIN32_EVENT_SET_WINDOW_POSITION: {
         int x = LOWORD(lParam);
         int y = HIWORD(lParam);
         SetWindowPos(hWnd, NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+        std::cout << "We called WndProc from Element.obj" << std::endl;
         break;
     }
     case WIN32_EVENT_SET_WINDOW_SIZE: {
         int width = LOWORD(lParam);
         int height = HIWORD(lParam);
         SetWindowPos(hWnd, NULL, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
+        std::cout << "We called WndProc from Element.obj" << std::endl;
         break;
     }
     case WIN32_EVENT_SET_WINDOW_COLOR: {
-        COLORREF color = static_cast<COLORREF>(lParam);
-        HBRUSH hBrush = CreateSolidBrush(color);
-        SetClassLongPtr(hWnd, GCLP_HBRBACKGROUND, reinterpret_cast<LONG_PTR>(hBrush));
+        HBRUSH brush = CreateSolidBrush(RGB(0, 0, 255));
+        SetClassLongPtr(hWnd, GCLP_HBRBACKGROUND, (LONG_PTR)brush);
+        std::cout << "We called WndProc from Element.obj" << std::endl;
         InvalidateRect(hWnd, NULL, TRUE);
         break;
     }
     case WIN32_EVENT_SET_WINDOW_STATE: {
         EWindowState state = static_cast<EWindowState>(lParam);
+        std::cout << "We called WndProc from Element.obj" << std::endl;
         switch (state) {
         case FULLSCREEN:
             ShowWindow(hWnd, SW_SHOWMAXIMIZED);

@@ -219,20 +219,21 @@ inline RetType WIN32_CALL_MODULE_FUNCTION_ASYNC(const char* MODULE, const char* 
     if (function != nullptr) {
     #ifdef LOGGING
         size_t TaskID = ThreadManager::GetInstance().GetTaskCount(Process);
-        
         auto lambda = [MODULE, TaskID, FUNCTION_NAME, Process]() {
             size_t lastSlashPos = std::string(MODULE).find_last_of('/');
             std::string moduleNameSubstring = std::string(MODULE).substr(lastSlashPos + 1);
             Logger::Log(stdout, LogType::ASYNC_TASK, TaskID, "WIN32_CALL_MODULE_FUNCTION_ASYNC(%s, %s, %zu)", moduleNameSubstring.c_str(), FUNCTION_NAME, Process);
         };
         ThreadManager::GetInstance().AddTask(function, Process, lambda);
+        return RetType{};
     #else 
         ThreadManager::GetInstance().AddTaskNoLog(function, Process);
+        return RetType{};
     #endif // LOGGING
     } else {
         Logger::Log(stderr, LogType::LOG_ERROR, 0, "Failed to find function %s in module %s : %s", MODULE, FUNCTION_NAME, GetLastError());
         // Return a default value for RetType in case of failure
-        return RetType(0);
+        return RetType();
     }
 }
 template<typename RetType, typename... Args>
