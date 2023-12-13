@@ -18,7 +18,7 @@ public:
         auto taskFunc = [func, args...]() { func(args...); };
         AddProcess(Process, taskFunc);
     }
-
+    
     // Start executing tasks for a specific process
     inline void ExecuteTasks(size_t Process) {
         for (auto& task : tasks[Process]) {

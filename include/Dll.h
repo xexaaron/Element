@@ -8,9 +8,19 @@
 #include <type_traits>
 #include <string>
 #include "ThreadManager.h"
+#include <concepts>
+
+// Just wanted to try out concepts
+template<typename T>
+concept StringType = std::is_convertible_v<T, std::string>;
+
 template<typename T>
 inline std::string LogArgument(const T& arg) {
-    return std::to_string(arg);
+    if constexpr (StringType<T>) {
+        return std::string("\"") + std::string(arg) + std::string("\"");
+    } else {
+        return std::to_string(arg);
+    }
 }
 template<typename T>
 inline std::string LogArgument(const std::basic_string<T>& arg) {
@@ -195,7 +205,7 @@ inline RetType WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC(const char* MODULE, const c
             thread.join();
         }
     }
-    inline void* UNIX_FIND_MODULE(const char* MODULE) {
+    [[nodiscard]] inline void* UNIX_FIND_MODULE(const char* MODULE) {
         auto it = LoadedModules.find(MODULE);
         if (it != LoadedModules.end()) {
             return it->second;
