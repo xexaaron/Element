@@ -9,11 +9,8 @@
 #include <string>
 #include "ThreadManager.h"
 #include <concepts>
-
-// Just wanted to try out concepts
 template<typename T>
 concept StringType = std::is_convertible_v<T, std::string>;
-
 template<typename T>
 inline std::string LogArgument(const T& arg) {
     if constexpr (StringType<T>) {
@@ -116,7 +113,7 @@ inline static std::map<const char*, HINSTANCE> LoadedModules;
 inline void WIN32_LOAD_MODULE(const char* libPath) {
     HINSTANCE handle = LoadLibraryA(libPath);
     if (!handle) {
-        std::cerr << "ERROR  : Failed to load the DLL: " << GetLastError() << std::endl;
+        std::cerr << "ERROR : Failed to load the DLL: " << GetLastError() << std::endl;
         // Handle error condition
     } else {
         LoadedModules[libPath] = handle;
@@ -144,7 +141,7 @@ inline void WIN32_UNLOAD_MODULE(const char* MODULE) {
         FreeLibrary(moduleHandle);
         LoadedModules.erase(MODULE);
     } else {
-        std::cerr << "ERROR  : Trouble unloading module " << MODULE << std::endl;
+        std::cerr << "ERROR : Trouble unloading module " << MODULE << std::endl;
     }
 }
 
@@ -157,13 +154,14 @@ inline RetType WIN32_CALL_MODULE_FUNCTION(const char* MODULE, const char* FUNCTI
 #ifdef LOGGING
     size_t lastSlashPos = std::string(MODULE).find_last_of('/');
     std::string moduleNameSubstring = std::string(MODULE).substr(lastSlashPos + 1);
+
     std::cerr << "Function Call   : WIN32_CALL_MODULE_FUNCTION("
     << moduleNameSubstring << ", " << FUNCTION_NAME << ")" << std::endl;
     printf("Return Type     : %s\n\n", typeid(RetType).name()); 
 #endif // LOG_ARGS    
         return function();
     } else {
-        std::cerr << "ERROR  : Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
+        std::cerr << "ERROR : Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
         // Return a default value for RetType in case of failure
         return RetType(0);
     }
@@ -184,7 +182,7 @@ inline RetType WIN32_CALL_MODULE_FUNCTION_ASYNC(const char* MODULE, const char* 
         ThreadManager::GetInstance().AddTask(function, Process);
         return RetType(0);
     } else {
-        std::cerr << "ERROR  : Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
+        std::cerr << "ERROR : Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
         // Return a default value for RetType in case of failure
         return RetType(0);
     }
@@ -201,7 +199,7 @@ inline RetType WIN32_CALL_MODULE_FUNCTION_ARGS(const char* MODULE, const char* F
     if (function != nullptr) {
         return function(args...);
     } else {
-        std::cerr << "ERROR  : Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
+        std::cerr << "ERROR : Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
         // Return a default value for RetType in case of failure
         return RetType(0);
     }
@@ -219,7 +217,7 @@ inline RetType WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC(const char* MODULE, const c
         ThreadManager::GetInstance().AddTask(function, Process, args...);
         return RetType(0);
     } else {
-        std::cerr << "ERROR  : Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
+        std::cerr << "ERROR : Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
         // Return a default value for RetType in case of failure
         return RetType(0);
     }
@@ -273,7 +271,7 @@ inline RetType WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC(const char* MODULE, const c
                 
                 func(); 
             } else {
-                std::cerr << "ERROR  : Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
+                std::cerr << "ERROR : Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
             }
         } else {
             std::cerr << "Module '" << MODULE << "' not found." << std::endl;
@@ -294,7 +292,7 @@ inline RetType WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC(const char* MODULE, const c
             #endif // LOG_ARGS
                 return func(args...);
             } else {
-                std::cerr << "ERROR  : Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
+                std::cerr << "ERROR : Failed to find the function '" << FUNCTION_NAME << "' in the module '" << MODULE << "'." << std::endl;
             }
         } else {
             std::cerr << "Module '" << MODULE << "' not found." << std::endl;

@@ -29,6 +29,7 @@ int main() {
             c = a / b;
             mode = "Division";
         }
+        
         printf("\nTASK   : [Type : %s %s] [a = %i] %c [b = %i] = [c = %i]\n", typeid(c).name(), mode.c_str(), a, L_SIGN,  b, c);
     };
     ThreadManager::GetInstance().AddTask(TestTask, MAIN_PROCESS);
