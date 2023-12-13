@@ -64,7 +64,7 @@ WINDOWDLL_API int8_t WIN32_SetWindowSize(int x, int y) {
     return 0;
 }
 
-WINDOWDLL_API int8_t WIN32_SetWindowColor(UINT32 Red, UINT32 Green, UINT32 Blue) {
+WINDOWDLL_API int8_t WIN32_SetWindowColor(uint32_t Red, uint32_t Green, uint32_t Blue) {
     if (hWnd) {
         COLORREF Color = RGB(Red, Green, Blue);
         PostMessage(hWnd, WIN32_EVENT_SET_WINDOW_COLOR, 0, (LPARAM)Color);
