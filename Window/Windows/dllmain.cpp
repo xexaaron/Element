@@ -24,7 +24,7 @@ int WindowSizeY = 600;
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-WINDOWDLL_API int8_t WIN32_TestMessage(std::string msg) {
+WINDOWDLL_API int8_t WINTestMessage(std::string msg) {
     if (!msg.empty()) {
         MessageBoxA(NULL, msg.c_str(), "Test Message", MB_OK);
     }
@@ -34,7 +34,7 @@ WINDOWDLL_API int8_t WIN32_TestMessage(std::string msg) {
     return 0;
 }
 
-WINDOWDLL_API int8_t WIN32_SetWindowTitle(const char* Title) {
+WINDOWDLL_API int8_t WINSetWindowTitle(const char* Title) {
     if (hWnd) {
         PostMessage(hWnd, WIN32_EVENT_SET_WINDOW_TITLE, 0, (LPARAM)Title);
     }
@@ -43,7 +43,7 @@ WINDOWDLL_API int8_t WIN32_SetWindowTitle(const char* Title) {
     }
     return 0;
 }
-WINDOWDLL_API int8_t WIN32_SetWindowPosition(int x, int y) {
+WINDOWDLL_API int8_t WINSetWindowPosition(int x, int y) {
     if (hWnd) {
         LPARAM Pos = MAKELPARAM(static_cast<WORD>(x), static_cast<WORD>(y));
         PostMessage(hWnd, WIN32_EVENT_SET_WINDOW_POSITION, 0, Pos);
@@ -54,7 +54,7 @@ WINDOWDLL_API int8_t WIN32_SetWindowPosition(int x, int y) {
     return 0;
 }
 
-WINDOWDLL_API int8_t WIN32_SetWindowSize(int x, int y) {
+WINDOWDLL_API int8_t WINSetWindowSize(int x, int y) {
     if (hWnd) {
         LPARAM Size = MAKELPARAM(static_cast<WORD>(x), static_cast<WORD>(y));
         PostMessage(hWnd, WIN32_EVENT_SET_WINDOW_SIZE, 0, Size);
@@ -64,7 +64,7 @@ WINDOWDLL_API int8_t WIN32_SetWindowSize(int x, int y) {
     return 0;
 }
 
-WINDOWDLL_API int8_t WIN32_SetWindowColor(uint32_t Red, uint32_t Green, uint32_t Blue) {
+WINDOWDLL_API int8_t WINSetWindowColor(uint32_t Red, uint32_t Green, uint32_t Blue) {
     if (hWnd) {
         COLORREF Color = RGB(Red, Green, Blue);
         PostMessage(hWnd, WIN32_EVENT_SET_WINDOW_COLOR, 0, (LPARAM)Color);
@@ -76,7 +76,7 @@ WINDOWDLL_API int8_t WIN32_SetWindowColor(uint32_t Red, uint32_t Green, uint32_t
 
 
 
-WINDOWDLL_API int8_t WIN32_SetWindowState(EWindowState state) {
+WINDOWDLL_API int8_t WINSetWindowState(EWindowState state) {
     if (hWnd) {
         PostMessage(hWnd, WIN32_EVENT_SET_WINDOW_STATE, 0, (LPARAM)state);
     }

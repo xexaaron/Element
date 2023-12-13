@@ -8,9 +8,9 @@ class Window final {
 public:
     Window(SWindowData data)  : Data(data), TargetPlatform(TARGET_PLATFORM) {
         if (TargetPlatform == "Windows") {
-            TargetPlatform = "WIN32_";
+            TargetPlatform = "WIN";
         } else if (TargetPlatform == "Linux") {
-            TargetPlatform = "UNIX_";
+            TargetPlatform = "UNIX";
         }
         LoadModule(WINDOW_DLL);
         CallModuleFuncAsync<void>(WINDOW_DLL, "CreateAndRunWindow", WINDOW_PROCESS);

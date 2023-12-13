@@ -19,24 +19,32 @@ public:
         AddProcess(Process, taskFunc);
     }
     
-    // Start executing tasks for a specific process
+    
     inline void ExecuteTasks(size_t Process) {
+        int i = 0;
+    #ifdef LOGGING
+        printf("STATUS : Executing Process [%zu]\n", Process);    
+    #endif // LOGGING
         for (auto& task : tasks[Process]) {
+        #ifdef LOGGING
+            printf("STATUS : Executing Task    [%i]\n", i); 
+        #endif // LOGGING
             processThreads[Process].emplace_back(task);
+            i++;
         }
     }
 
     inline void ExecuteProcesses() {
+        int i = 0;
         for (auto& process : tasks) {
             ExecuteTasks(process.first);
+            i++;
         }
 
-        // After executing all processes, clear all tasks and associated threads
         for (auto& process : tasks) {
             WaitProcess(process.first);
         }
 
-        // Clear all tasks and associated threads after executing all processes
         for (auto& process : tasks) {
             process.second.clear();
             processThreads[process.first].clear();

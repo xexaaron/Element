@@ -15,13 +15,10 @@ enum EWindowState {
     MINIMIZED = 2,
 };
 
-extern "C" {
-    WINDOWDLL_API int CreateAndRunWindow();
-
-    WINDOWDLL_API int8_t WIN32_SetWindowTitle(const char* title);
-    WINDOWDLL_API int8_t WIN32_SetWindowPosition(int x, int y);
-    WINDOWDLL_API int8_t WIN32_SetWindowSize(int x, int y);
-    WINDOWDLL_API int8_t WIN32_SetWindowColor(uint32_t Red, uint32_t Green, uint32_t Blue);
-    WINDOWDLL_API int8_t WIN32_SetWindowState(EWindowState state);
-    WINDOWDLL_API int8_t WIN32_TestMessage(std::string msg);
-}
+extern "C" WINDOWDLL_API int CreateAndRunWindow();
+extern "C" WINDOWDLL_API int8_t WINSetWindowTitle(const char* title);
+extern "C" WINDOWDLL_API int8_t WINTestMessage(std::string msg);
+extern "C" WINDOWDLL_API int8_t WINSetWindowState(EWindowState state);
+extern "C" WINDOWDLL_API int8_t WINSetWindowColor(uint32_t Red, uint32_t Green, uint32_t Blue);
+extern "C" WINDOWDLL_API int8_t WINSetWindowSize(int x, int y);
+extern "C" WINDOWDLL_API int8_t WINSetWindowPosition(int x, int y);

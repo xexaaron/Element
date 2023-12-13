@@ -7,24 +7,30 @@ const char* Window::AppendPlatform(std::string stringToAppend) {
     return value;
 }
 bool Window::SetBackgroundColor(Vector3D<uint32_t> color) {
-    int8_t result = CallModuleFuncWithArgsAsync<int8_t, uint32_t, uint32_t, uint32_t>(WINDOW_DLL, AppendPlatform("SetWindowColor"), WINDOW_PROCESS, color.x, color.y, color.z);
-    if (FUNCTION_SUCCESS) {
+    int8_t result = CallModuleFuncWithArgs<int8_t, uint32_t, uint32_t, uint32_t>(
+    WINDOW_DLL, AppendPlatform("SetWindowColor"), color.x, color.y, color.z);
+
+    if (result == FUNCTION_SUCCESS) {
         Data.BackgroundColor = color;
         return true;
-    } else if (FUNCTION_FAILURE) {
+    } else if (result == FUNCTION_FAILURE) {
     #ifdef LOGGING
-        printf("ERROR :\n    Function : Window::SetBackgroundColor(%u,%u,%u)\n    %s\n    Window Manager is NULL\n", color.x, color.y, color.z, WINDOW_DLL);
+        printf("ERROR :\n    Function : Window::SetBackgroundColor(%u,%u,%u)\n    %s\n    Window Manager is NULL\n",
+               color.x, color.y, color.z, WINDOW_DLL);
     #endif // LOGGING
         return false;
     }
-    return true;
+
+    // Handle other potential error conditions here, if needed
+
+    return true; // Or return false if none of the conditions match your expected results
 }
 bool Window::SetTitle(const char* title) {
-    int8_t result = CallModuleFuncWithArgsAsync<int8_t, const char*>(WINDOW_DLL, AppendPlatform("SetWindowTitle"), WINDOW_PROCESS, title);
-    if (result == 0) {
+    int8_t result = CallModuleFuncWithArgs<int8_t, const char*>(WINDOW_DLL, AppendPlatform("SetWindowTitle"), title);
+    if (result == FUNCTION_SUCCESS) {
         Data.Title = title;
         return true;
-    } else if (result == -1) {
+    } else if (result == FUNCTION_FAILURE) {
     #ifdef LOGGING
         printf("ERROR :\n    Function : Window::SetTitle(%s)\n    %s\n    Window Manager is NULL\n", title, WINDOW_DLL);
     #endif // LOGGING
@@ -34,11 +40,11 @@ bool Window::SetTitle(const char* title) {
 }
 bool Window::SetState(EWindowState state) {
     int8_t result = 0;
-    result = CallModuleFuncWithArgsAsync<int8_t, EWindowState>(WINDOW_DLL, AppendPlatform("SetWindowState"), WINDOW_PROCESS, state);
-    if (result == 0) {
+    result = CallModuleFuncWithArgs<int8_t, EWindowState>(WINDOW_DLL, AppendPlatform("SetWindowState"), state);
+    if (result == FUNCTION_SUCCESS) {
         Data.State = state;
         return true;
-    } else if (result == -1) {
+    } else if (result == FUNCTION_FAILURE) {
     #ifdef LOGGING
         printf("ERROR :\n    Function : Window::SetState(%i)\n    %s\n    Window Manager is NULL\n", state, WINDOW_DLL);
     #endif // LOGGING
@@ -48,11 +54,11 @@ bool Window::SetState(EWindowState state) {
 } 
 
 bool Window::SetPosition(Vector2D<int> position) {
-    int8_t result = CallModuleFuncWithArgsAsync<int8_t, int, int>(WINDOW_DLL, AppendPlatform("SetWindowPosition"), WINDOW_PROCESS, position.x, position.y);
-    if (result == 0) {
+    int8_t result = CallModuleFuncWithArgs<int8_t, int, int>(WINDOW_DLL, AppendPlatform("SetWindowPosition"), position.x, position.y);
+    if (result == FUNCTION_SUCCESS) {
         Data.Position == position;
         return true;
-    } else if (result = -1) {
+    } else if (result = FUNCTION_FAILURE) {
     #ifdef LOGGING
         printf("ERROR :\n    Function : Window::SetPosition(%i,%i)\n    %s\n    Window Manager is NULL\n", position.x, position.y, WINDOW_DLL);
     #endif // LOGGING
@@ -62,11 +68,11 @@ bool Window::SetPosition(Vector2D<int> position) {
 }
 bool Window::SetSize(Vector2D<int> size) {
     int8_t result = 0;
-    result = CallModuleFuncWithArgsAsync<int8_t, int, int>(WINDOW_DLL, AppendPlatform("SetWindowSize"), WINDOW_PROCESS, size.x, size.y);
-    if (result == 0) {
+    result = CallModuleFuncWithArgs<int8_t, int, int>(WINDOW_DLL, AppendPlatform("SetWindowSize"), size.x, size.y);
+    if (result == FUNCTION_SUCCESS) {
         Data.Size = size;
         return true;
-    } else if (result == -1) {
+    } else if (result == FUNCTION_FAILURE) {
     #ifdef LOGGING
         printf("ERROR :\n    Function : Window::SetSize(%d,%d)\n    %s\n    Window Manager is NULL\n", size.x, size.y, WINDOW_DLL);
     #endif // LOGGING
