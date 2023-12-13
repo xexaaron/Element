@@ -303,7 +303,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   <ItemGroup>
     <ClCompile Include="D:\GithubRepositories\Element\main.cpp" />
     <ClInclude Include="D:\GithubRepositories\Element\src\Global\IO.hpp" />
-    <ClCompile Include="D:\GithubRepositories\Element\src\Base\Class.cpp" />
+    <ClCompile Include="D:\GithubRepositories\Element\src\Base\Base.cpp" />
+    <ClCompile Include="D:\GithubRepositories\Element\src\Application\Application.cpp" />
     <ClCompile Include="D:\GithubRepositories\Element\src\Application\Window.cpp" />
   </ItemGroup>
   <ItemGroup>

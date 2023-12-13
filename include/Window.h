@@ -1,8 +1,8 @@
 #pragma once
 #include "Platform.h"
 #include "Structs.h"
-
-#define WINDOW_PROCESS 0
+#include "../config.h"
+#include <cstdint>
 
 class Window final {
 public:
@@ -24,9 +24,9 @@ public:
     bool SetSize(Vector2D<int> Size);
     bool SetData(SWindowData Data);
     bool SetTitle(const char* Title);
-    bool SetBackgroundColor(Vector3D<UINT32> Color); 
+    bool SetBackgroundColor(Vector3D<uint32_t> Color); 
 
-    Vector3D<UINT32> GetBackgroundColor();
+    Vector3D<uint32_t> GetBackgroundColor();
     const char* GetTitle();
     Vector2D<int> GetPosition();
     Vector2D<int> GetSize();

@@ -6,13 +6,12 @@ const char* Window::AppendPlatform(std::string stringToAppend) {
     std::strcpy(value, temp.c_str()); 
     return value;
 }
-bool Window::SetBackgroundColor(Vector3D<UINT32> color) {
-    int8_t result = 0;
-    result = CallModuleFuncWithArgsAsync<int8_t, UINT32, UINT32, UINT32>(WINDOW_DLL, AppendPlatform("SetWindowColor"), WINDOW_PROCESS, color.x, color.y, color.z);
-    if (result == 0) {
+bool Window::SetBackgroundColor(Vector3D<uint32_t> color) {
+    int8_t result = CallModuleFuncWithArgsAsync<int8_t, uint32_t, uint32_t, uint32_t>(WINDOW_DLL, AppendPlatform("SetWindowColor"), WINDOW_PROCESS, color.x, color.y, color.z);
+    if (FUNCTION_SUCCESS) {
         Data.BackgroundColor = color;
         return true;
-    } else if (result == -1) {
+    } else if (FUNCTION_FAILURE) {
     #ifdef LOGGING
         printf("ERROR :\n    Function : Window::SetBackgroundColor(%u,%u,%u)\n    %s\n    Window Manager is NULL\n", color.x, color.y, color.z, WINDOW_DLL);
     #endif // LOGGING
@@ -21,8 +20,7 @@ bool Window::SetBackgroundColor(Vector3D<UINT32> color) {
     return true;
 }
 bool Window::SetTitle(const char* title) {
-    int8_t result = 0;
-    result = CallModuleFuncWithArgsAsync<int8_t, const char*>(WINDOW_DLL, AppendPlatform("SetWindowTitle"), WINDOW_PROCESS, title);
+    int8_t result = CallModuleFuncWithArgsAsync<int8_t, const char*>(WINDOW_DLL, AppendPlatform("SetWindowTitle"), WINDOW_PROCESS, title);
     if (result == 0) {
         Data.Title = title;
         return true;
@@ -48,9 +46,9 @@ bool Window::SetState(EWindowState state) {
     }
     return true;
 } 
+
 bool Window::SetPosition(Vector2D<int> position) {
-    int8_t result = 0;
-    result = CallModuleFuncWithArgsAsync<int8_t, int, int>(WINDOW_DLL, AppendPlatform("SetWindowPosition"), WINDOW_PROCESS, position.x, position.y);
+    int8_t result = CallModuleFuncWithArgsAsync<int8_t, int, int>(WINDOW_DLL, AppendPlatform("SetWindowPosition"), WINDOW_PROCESS, position.x, position.y);
     if (result == 0) {
         Data.Position == position;
         return true;

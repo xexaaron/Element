@@ -7,5 +7,6 @@ int main() {
     Data.State = EWindowState::FULLSCREEN;
     Window* m_Window = new Window(Data);
     ThreadManager::GetInstance().ExecuteProcesses();
+    m_Window->SetBackgroundColor(Vector3D<uint32_t>(255, 0, 0));
     return 0;
 }

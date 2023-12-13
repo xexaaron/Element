@@ -4,3 +4,12 @@
 #define INCLUDE_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/include/"
 #define WINDOW_DLL "${CMAKE_CURRENT_LIST_DIR}/Modules/${CMAKE_SYSTEM_NAME}/${CMAKE_BUILD_TYPE}/${LIB_PREFIX}Window${LIB_EXT}"
 #define TARGET_PLATFORM "${CMAKE_SYSTEM_NAME}"
+
+#define FUNCTION_SUCCESS static_cast<int8_t>(0)
+#define FUNCTION_FAILURE static_cast<int8_t>(-1)
+
+#define WINDOW_PROCESS 0
+/**
+Define Other processes.
+*/
+#define MAIN_PROCESS 65535

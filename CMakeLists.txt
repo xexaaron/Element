@@ -4,7 +4,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(SOURCE_FILES main.cpp
                  src/Global/IO.hpp
-                 src/Base/Class.cpp
+                 src/Base/Base.cpp
+                 src/Application/Application.cpp
                  src/Application/Window.cpp)
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build" FORCE)
