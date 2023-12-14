@@ -84,9 +84,7 @@
         "**/Window/**/x64": true,
         "**/Window/**/.vs": true,
         "**/Makefile": true,
-        "**/*.bat": true,
         "**/build/Debug": true,
-        "**/build/Release": true,
-        "**/*.sh": true,
+        "**/build/Release": true,      
     }
 }
