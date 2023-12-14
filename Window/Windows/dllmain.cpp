@@ -102,7 +102,7 @@ WINDOWDLL_API int8_t WINSetWindowState(EWindowState state) {
     else {
         return -1;
     }
-    std::cout << "STATUS              : WINSetWindowState -> FUNCTION_SUCCESS" << std::endl;
+    
     return 0;
 }
 
@@ -152,14 +152,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
         int x = LOWORD(lParam);
         int y = HIWORD(lParam);
         SetWindowPos(hWnd, NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-        Logger::Log(stdout, LogType::RESULT_VALID, 0, "CreateAndRunWindow() -> Succesfully called WndProc inside Window.dll from Element.obj");
+        Logger::Log(stdout, LogType::RESULT_VALID, 0, "Event WM_SET_WINDOW_SIZE -> Succesfully called WndProc inside Window.dll from Element.obj");
         break;
     }
     case WM_SET_WINDOW_SIZE: {
         int width = LOWORD(lParam);
         int height = HIWORD(lParam);
         SetWindowPos(hWnd, NULL, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
-        Logger::Log(stdout, LogType::RESULT_VALID, 0, "CreateAndRunWindow() -> Succesfully called WndProc inside Window.dll from Element.obj");
+        Logger::Log(stdout, LogType::RESULT_VALID, 0, "Event WM_SET_WINDOW_SIZE -> Succesfully called WndProc inside Window.dll from Element.obj");
         break;
     }
     case WM_ERASEBKGND: {
@@ -201,7 +201,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
     }
     case WM_SET_WINDOW_STATE: {
         EWindowState state = static_cast<EWindowState>(lParam);
-        Logger::Log(stdout, LogType::RESULT_VALID, 0, "CreateAndRunWindow() -> Succesfully called WndProc inside Window.dll from Element.obj");
+        Logger::Log(stdout, LogType::RESULT_VALID, 0, "Event WM_SET_WINDOW_STATE -> Succesfully called WndProc inside Window.dll from Element.obj");
         switch (state) {
         case FULLSCREEN:
             ShowWindow(hWnd, SW_SHOWMAXIMIZED);
