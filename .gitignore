@@ -4,12 +4,14 @@ change_log.txt
 reverse_change_log.txt
 *.vcxproj
 *.filters
-build/CMakeFiles
+build/CMakeFiles/**
 *.sln
 *.cmake
 *.tlog
 *.bin
 *.ipch
+html/**
+latex/**
 build/*.dir
 build/x64
 MakeFile

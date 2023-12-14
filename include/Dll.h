@@ -180,6 +180,7 @@ inline HINSTANCE WIN32_FIND_MODULE(const char* MODULE) {
     }
     return nullptr;
 }
+ 
 inline void WIN32_UNLOAD_MODULE(const char* MODULE) {
     HINSTANCE moduleHandle = WIN32_FIND_MODULE(MODULE);
     if (moduleHandle) {

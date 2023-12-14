@@ -71,5 +71,22 @@
         "mutex": "cpp",
         "codecvt": "cpp",
         "future": "cpp"
+    },
+    "files.exclude": {
+        "**/html/**": true,
+        "**/latex/**": true,
+        "**/Doxyfile": true,
+        "**/LICENSE": true,
+        "**/*.sln": true,
+        "**/*.vcxproj": true,
+        "**/*.filters": true,
+        "**/*.user": true,
+        "**/Window/**/x64": true,
+        "**/Window/**/.vs": true,
+        "**/Makefile": true,
+        "**/*.bat": true,
+        "**/build/Debug": true,
+        "**/build/Release": true,
+        "**/*.sh": true,
     }
 }

@@ -1,0 +1,17 @@
+# Set Doxygen to generate graphs using Graphviz
+HAVE_DOT               = YES
+
+# List of directories to include in the documentation
+INPUT                  = D:\GithubRepositories\Element\src, D:\GithubRepositories\Element\include, D:\GithubRepositories\Element\src\Application,
+                         D:\GithubRepositories\Element\src\Application\Base, D:\GithubRepositories\Element\src\Application\Global
+RECURSIVE              = YES
+
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+# Specify the path to the Graphviz dot tool
+DOT_PATH               = C:\Program Files\Graphviz\bin\dot.exe
+# Enable generation of inheritance diagrams
+CLASS_DIAGRAMS         = YES
+
+# Enable generation of collaboration diagrams
+COLLABORATION_GRAPH    = YES
