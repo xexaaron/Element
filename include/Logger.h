@@ -30,7 +30,19 @@ printf("\033[1;47;35mTexting\033[0m\t\t");  /// WHITE HIGHLIGHT PURPLE TEXT
 printf("\t\t");
 */
 
+
+#define LOG_COLOR_RESET   "\033[0m"
+#define LOG_RED           "\033[31m"
+#define LOG_GREEN         "\033[32m"
+#define LOG_YELLOW        "\033[33m"
+#define LOG_BLUE          "\033[34m"
+#define LOG_MAGENTA       "\033[35m"
+#define LOG_CYAN          "\033[36m"
+#define LOG_WHITE         "\033[37m"
+
+
 namespace Logger {
+<<<<<<< HEAD
     static const std::string LOG_COLOR_RESET = "\033[0m";
     static const std::string LOG_RED = "\033[31m";
     static const std::string LOG_GREEN = "\033[32m";
@@ -40,11 +52,16 @@ namespace Logger {
     static const std::string LOG_CYAN = "\033[36m";
     static const std::string LOG_WHITE = "\033[37m";
     static std::string LOG_COLOR;
+=======
+    inline static size_t HEADER_BUFFER_LENGTH = 20;
+    inline static std::string LOG_COLOR = LOG_COLOR_RESET;
+>>>>>>> 20e9b908268a7eefc57571943b7e9584651f2f86
     inline std::string ComputeHeader(LogType type, size_t id) {
         std::string Header;
         std::string LOG_COLOR;
         switch (type) {
             case LogType::LOG:
+<<<<<<< HEAD
                 LOG_COLOR = LOG_YELLOW;
                 Header = "LOG                  : ";
                 break;
@@ -59,6 +76,22 @@ namespace Logger {
             case LogType::LOG_ERROR:
                 LOG_COLOR = LOG_RED;
                 Header = "ERROR                : ";
+=======
+                LOG_COLOR = LOG_COLOR_RESET;
+                Header = "LOG                 ";
+                break;
+            case LogType::STATUS:
+                LOG_COLOR = LOG_BLUE;
+                Header = "STATUS              ";
+                break;
+            case LogType::LOG_WARNING:
+                LOG_COLOR = LOG_YELLOW;
+                Header = " WARNING             ";
+                break;
+            case LogType::LOG_ERROR:
+                LOG_COLOR = LOG_RED;
+                Header = " ERROR               ";
+>>>>>>> 20e9b908268a7eefc57571943b7e9584651f2f86
                 break;
             case LogType::SUBSTATUS:
                 LOG_COLOR = LOG_BLUE;
@@ -98,8 +131,14 @@ namespace Logger {
         va_list args;
         va_start(args, format);
 
+<<<<<<< HEAD
         fprintf(stream, "%s", Header.c_str());
         vfprintf(stream, format, args);
+=======
+        logStream.str().insert(0, LOG_COLOR)
+        vfprintf(stream, logStream.str().c_str(), args); // Print the log header
+        vfprintf(stream, format, args); // Print the log message
+>>>>>>> 20e9b908268a7eefc57571943b7e9584651f2f86
         fprintf(stream, "\n");
 
         va_end(args);

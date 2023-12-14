@@ -3,9 +3,13 @@
 #include "Structs.h"
 #include "../config.h"
 #include <cstdint>
+<<<<<<< HEAD
 #include <future>
 #include "Logger.h"
 
+=======
+#include "Logger.h"
+>>>>>>> 20e9b908268a7eefc57571943b7e9584651f2f86
 class Window final {
 public:
     Window(SWindowData data);

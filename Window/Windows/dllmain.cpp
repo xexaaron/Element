@@ -36,7 +36,6 @@ WINDOWDLL_API int8_t WINTestMessage(std::string msg) {
         Logger::Log(stderr, LogType::RESULT_ERROR, 0, "WINTestMessage(std::string msg) -> Window Manager (hWnd) is NULL");
         return -1;
     }
-    Logger::Log(stderr, LogType::RESULT_ERROR, 0, "WINTestMessage(std::string msg) -> Internal function processes were skipped");
     return 0;
 }
 
@@ -50,7 +49,6 @@ WINDOWDLL_API int8_t WINSetWindowTitle(const char* Title) {
         Logger::Log(stderr, LogType::RESULT_ERROR, 0, "WINSetWindowTitle(const char* Title) -> Window Manager (hWnd) is NULL");
         return -1;
     }
-    Logger::Log(stderr, LogType::RESULT_ERROR, 0, "WINSetWindowTitle(const char* Title) -> Internal function processes were skipped");
     return 0;
 }
 WINDOWDLL_API int8_t WINSetWindowPosition(int x, int y) {
@@ -64,7 +62,6 @@ WINDOWDLL_API int8_t WINSetWindowPosition(int x, int y) {
         Logger::Log(stderr, LogType::RESULT_ERROR, 0, "WINSetWindowPosition(int x, int y) ->Window Manager (hWnd) is NULL");
         return -1;
     }
-    Logger::Log(stderr, LogType::RESULT_ERROR, 0, "WINSetWindowPosition(int x, int y) -> Internal function processes were skipped");
     return 0;
 }
 
@@ -92,7 +89,6 @@ WINDOWDLL_API int8_t WINSetWindowColor(uint32_t Red, uint32_t Green, uint32_t Bl
         return -1;
         Logger::Log(stderr, LogType::RESULT_ERROR, 0, "WINSetWindowColor(uint32_t Red, uint32_t Green, uint32_t Blue) -> Window Manager (hWnd) is NULL");
     }
-    Logger::Log(stderr, LogType::RESULT_ERROR, 0, "WINSetWindowColor(uint32_t Red, uint32_t Green, uint32_t Blue) -> Internal function processes were skipped");
     return 0;
 }
 
@@ -106,6 +102,7 @@ WINDOWDLL_API int8_t WINSetWindowState(EWindowState state) {
     else {
         return -1;
     }
+    std::cout << "STATUS              : WINSetWindowState -> FUNCTION_SUCCESS" << std::endl;
     return 0;
 }
 

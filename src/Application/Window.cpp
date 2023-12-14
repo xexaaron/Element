@@ -25,9 +25,29 @@ void Window::SendTestMessageToWindow(std::string Message) {
     int8_t result = CallModuleFuncWithArgsAsync<int8_t, std::string>(WINDOW_DLL, AppendPlatform("TestMessage"), MAIN_PROCESS, Message);
 }
 
+<<<<<<< HEAD
 void Window::SetBackgroundColor(Vector3D<uint32_t> color) {
     int8_t result = CallModuleFuncWithArgsAsync<int8_t, uint32_t, uint32_t, uint32_t>(WINDOW_DLL, AppendPlatform("SetWindowColor"), MAIN_PROCESS, color.x, color.y, color.z);
     Data.BackgroundColor = color;
+=======
+bool Window::SetBackgroundColor(Vector3D<uint32_t> color) {
+    int8_t result = CallModuleFuncWithArgsAsync<int8_t, uint32_t, uint32_t, uint32_t>(
+    WINDOW_DLL, AppendPlatform("SetWindowColor"), MAIN_PROCESS, color.x, color.y, color.z);
+    if (result == FUNCTION_SUCCESS) {
+        Data.BackgroundColor = color;
+    #ifdef LOGGING
+        Logger::Log(stdout, LogType::ASYNC_TASK, MAIN_PROCESS, "Window::SetBackgroundColor(Vector3D<uint32_t>) -> FUNCTION_SUCCESS");
+    #endif // LOGGING
+        return true;
+    } else if (result == FUNCTION_FAILURE) {
+    #ifdef LOGGING
+        Logger::Log(stderr, LogType::ASYNC_TASK, MAIN_PROCESS, "Window::SetBackgroundColor(Vector3D<uint32_t>) -> FUNCTION_FAILURE && WM_NULL ");  
+    #endif // LOGGING
+        return false;
+    }
+   
+    return true; 
+>>>>>>> 20e9b908268a7eefc57571943b7e9584651f2f86
 }
 
 void Window::SetTitle(const char* title) {
