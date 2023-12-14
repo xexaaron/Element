@@ -69,6 +69,7 @@
         "xtree": "cpp",
         "xutility": "cpp",
         "mutex": "cpp",
-        "codecvt": "cpp"
+        "codecvt": "cpp",
+        "future": "cpp"
     }
 }

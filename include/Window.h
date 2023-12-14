@@ -18,7 +18,7 @@ public:
     void SetData(SWindowData Data);
     void SetTitle(const char* Title);
     void SetBackgroundColor(Vector3D<uint32_t> Color); 
-    void StartEventLoop();
+   
     Vector3D<uint32_t> GetBackgroundColor();
     const char* GetTitle();
     Vector2D<int> GetPosition();

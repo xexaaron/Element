@@ -4,8 +4,6 @@ enum EWindowState {
     MAXIMIZED,
     MINIMIZED,
 };
-
-
 enum LogType {
     LOG = 0,
     STATUS = 1,
@@ -13,6 +11,8 @@ enum LogType {
     LOG_ERROR = 3,
     SUBSTATUS = 4,
     ASYNC_TASK = 5,
-    NON_ASYNC_TASK = 6
+    NON_ASYNC_TASK = 6,
+    RESULT_VALID = 7,
+    RESULT_ERROR = 8
 };
 

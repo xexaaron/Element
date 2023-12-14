@@ -27,11 +27,9 @@ void Window::SendTestMessageToWindow(std::string Message) {
 
 void Window::SetBackgroundColor(Vector3D<uint32_t> color) {
     int8_t result = CallModuleFuncWithArgsAsync<int8_t, uint32_t, uint32_t, uint32_t>(WINDOW_DLL, AppendPlatform("SetWindowColor"), MAIN_PROCESS, color.x, color.y, color.z);
-   
+    Data.BackgroundColor = color;
 }
-void Window::StartEventLoop() {
-    int result = CallModuleFuncAsync<int>(WINDOW_DLL, AppendPlatform("ProcessWindowMessages"), APP_PROCESS);
-}
+
 void Window::SetTitle(const char* title) {
     int8_t result = CallModuleFuncWithArgsAsync<int8_t, const char*>(WINDOW_DLL, AppendPlatform("SetWindowTitle"), MAIN_PROCESS, title);
     Data.Title = title;

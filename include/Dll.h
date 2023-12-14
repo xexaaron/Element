@@ -15,7 +15,6 @@
 // Just wanted to try out concepts
 template<typename T>
 concept StringType = std::is_convertible_v<T, std::string>;
-
 template<typename T>
 inline std::string LogArgument(const T& arg) {
     if constexpr (StringType<T>) {
@@ -37,8 +36,7 @@ inline std::string LogArguments(const Args&... args) {
     return result;
 }
 template<typename... Args>
-void LogArgumentsAndTypes(const Args&... args) {
-   
+void LogArgumentsAndTypes(const Args&... args) {  
     int dummy[] = {0, ((void)(std::cerr << "(" << LogArgumentType(args) << ")" << args << " "), 0)...};
     (void)dummy;
     
@@ -175,7 +173,7 @@ inline void WIN32_LOAD_MODULES(const char* modulePaths[], int numModules) {
         thread.join();
     }
 }
-[[nodiscard]] inline HINSTANCE WIN32_FIND_MODULE(const char* MODULE) {
+inline HINSTANCE WIN32_FIND_MODULE(const char* MODULE) {
     auto it = LoadedModules.find(MODULE);
     if (it != LoadedModules.end()) {
         return it->second;

@@ -5,6 +5,12 @@
 #include <mutex>
 #include <map>
 #include <iostream>
+#include <future>
+#include <chrono>
+#include <thread>
+#include "Logger.h"
+
+
 
 class ThreadManager {
 public:
@@ -30,6 +36,7 @@ public:
         };
         AddProcess(Process, taskFunc, lambda);
     }
+    
     template<typename Function>
     inline void AddTaskNoLog(Function&& func, size_t Process) {
         auto taskFunc = [func]() {
@@ -49,18 +56,22 @@ public:
     inline void ExecuteTasks(size_t Process) {
         int i = 0;
     #ifdef LOGGING
-        printf("STATUS               : Executing Process [%zu]\n", Process);
+        Logger::Log(stdout, LogType::STATUS, 0, "Executing Process [%zu]", Process);
     #endif // LOGGING
-        for (auto& taskInfo : taskInfos[Process]) {
+        
+        auto& taskVec = taskInfos[Process];
+        for (auto& taskInfo : taskVec) {
             auto& taskFunc = taskInfo.first;
             auto& lambda = taskInfo.second;
-        #ifdef LOGGING
-            printf("-- SUBSTATUS         : Executing Task    [%i]\n", i);
-        #endif // LOGGING
+    #ifdef LOGGING
+            Logger::Log(stdout, LogType::SUBSTATUS, 0, "Executing Task    [%i]", i);
+    #endif // LOGGING
             lambda(); // CALL LAMBDA
             processThreads[Process].emplace_back(taskFunc);
+
             i++;
         }
+        std::this_thread::sleep_for(std::chrono::milliseconds(30)); // Add Delay for Process variables to become initialized.
     }
 
 
@@ -69,9 +80,7 @@ public:
             ExecuteTasks(process.first);
         }
 
-        for (auto& process : tasks) {
-            WaitProcess(process.first);
-        }
+        
 
         for (auto& process : tasks) {
             process.second.clear();
@@ -79,14 +88,30 @@ public:
         }
     }
 
-    // Wait for all tasks in a specific process to complete
     inline void WaitProcess(size_t Process) {
+        std::vector<std::future<void>> asyncTasks;
+
+        // Launch other processes asynchronously
+        for (const auto& [processId, tasks] : this->tasks) {
+            if (processId != Process) {
+                asyncTasks.emplace_back(std::async(std::launch::async, [this, processId] {
+                    ExecuteTasks(processId);
+                }));
+            }
+        }
+
+        // Wait for the specified Process to complete
         for (auto& thread : processThreads[Process]) {
             if (thread.joinable()) {
                 thread.join();
             }
         }
         processThreads[Process].clear();
+
+        // Wait for the other processes to complete asynchronously
+        for (auto& task : asyncTasks) {
+            task.get();
+        }
     }
 
     // Wait for all tasks in all processes to complete
@@ -138,9 +163,13 @@ private:
         taskProcessMap[Process]++;
     }
 
+//  size_t = Process , vector of lambda logging task info to log pre execution.
     std::map<size_t, std::vector<std::pair<std::function<void()>, std::function<void()>>>> taskInfos;
+//  size_t = Process , vector of lambda tasks associated with process.
     std::map<size_t, std::vector<std::function<void()>>> tasks;
+//  size_t = Process , vector of processes.
     std::map<size_t, std::vector<std::thread>> processThreads;
+//  szie_t = Process, size_t TaskID = order added;
     std::map<size_t, size_t> taskProcessMap;
     std::mutex mutex;
     std::mutex logMutex;

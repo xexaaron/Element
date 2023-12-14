@@ -10,9 +10,8 @@ void LogProgramBegin() {
     for (int i = 0; i < 100; ++i) {
         std::cout << std::endl;
     }
-    Logger::Log(stdout, LogType::LOG, 0, "Console Flushed");
-    Logger::Log(stdout, LogType::LOG, 0, "Program Start");
-    std::cout << std::endl;
+    Logger::Log(stdout, LogType::LOG, 0, "Flushed Console");
+    Logger::Log(stdout, LogType::LOG, 0, "Program Execute");
 }
 
 
@@ -28,14 +27,16 @@ int main() {
     Data.State = EWindowState::FULLSCREEN;
     Window* AppWindow = new Window(Data);
    
+    ThreadManager::GetInstance().ExecuteTasks(WINDOW_PROCESS);
+    
     if (AppWindow) {
-        AppWindow->SetTitle("Title");
-        AppWindow->SetPosition(Vector2D<int>(0, 0));
-        AppWindow->SetSize(Vector2D<int>(5, 5));
+        AppWindow->SetSize(Vector2D<int>(500, 500));
+        AppWindow->SetBackgroundColor(Vector3D<uint32_t>(255, 0, 0));
+        AppWindow->SetPosition(Vector2D<int>(950, 500));
+        AppWindow->SetTitle("Testing Testing");
     }
-     
-    ThreadManager::GetInstance().ExecuteProcesses();
-    ThreadManager::GetInstance().WaitAll();
+    
+    ThreadManager::GetInstance().ExecuteTasks(MAIN_PROCESS);
     return 0;
 }
 
