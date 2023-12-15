@@ -16,6 +16,9 @@ namespace Logger {
             static const std::string LOG_MAGENTA = "\033[35m";
             static const std::string LOG_CYAN = "\033[36m";
             static const std::string LOG_WHITE = "\033[37m";
+            static const std::string LOG_GRAY = "\033[90m";
+            static const std::string LOG_GREY = "\033[90m";
+            static const std::string LOG_COLOR_STRING = "\033[31m";
         }
         namespace LogAttributes {
             static const std::string LOG_UNDERLINE = "\033[4m";
@@ -169,13 +172,9 @@ namespace Logger {
         std::string Header = ComputeHeader(type, id);
         va_list args;
         va_start(args, format);
-        
         fprintf(stream, "%s", Header.c_str());
         vfprintf(stream, format, args);
         fprintf(stream, "\n");
-        if (type == LogType::ASYNC_TASK) {
-            fprintf(stream, "\n");   
-        }
         va_end(args);
     }
     template<typename T>
@@ -207,63 +206,91 @@ namespace Logger {
     template<typename T>
     inline std::string LogArgumentType(const T&) {
         #ifdef VERBOSE
-            return std::string(typeid(T).name());
+            return Logger::LogStyles::LogColors::LOG_BLUE + std::string(typeid(T).name()) + Logger::LogStyles::LOG_STYLE_RESET;
         #else // BASIC
             if constexpr (std::is_same_v<T, std::string>) {
-                return "std::string";
+                return Logger::LogStyles::LogColors::LOG_GREEN + "std::string" + Logger::LogStyles::LOG_STYLE_RESET;
             } else if constexpr (std::is_same_v<T, int>) {
-                return "int";
+                return Logger::LogStyles::LogColors::LOG_BLUE + "int" + Logger::LogStyles::LOG_STYLE_RESET;
             } else if constexpr (std::is_same_v<T, float>) {
-                return "float";
+                return Logger::LogStyles::LogColors::LOG_BLUE + "float" + Logger::LogStyles::LOG_STYLE_RESET;
             } else if constexpr (std::is_same_v<T, double>) {
-                return "double";
+                return Logger::LogStyles::LogColors::LOG_BLUE + "double" + Logger::LogStyles::LOG_STYLE_RESET;
             } else if constexpr (std::is_same_v<T, char>) {
-                return "char";
+                return Logger::LogStyles::LogColors::LOG_BLUE + "char" + Logger::LogStyles::LOG_STYLE_RESET;
             } else if constexpr (std::is_same_v<T, bool>) {
-                return "bool";
+                return Logger::LogStyles::LogColors::LOG_BLUE + "bool" + Logger::LogStyles::LOG_STYLE_RESET;
+            } else if constexpr (std::is_same_v<T, const char*>) {
+                return Logger::LogStyles::LogColors::LOG_BLUE + "const char*" + Logger::LogStyles::LOG_STYLE_RESET;
+            } else if constexpr (std::is_same_v<T, size_t>){
+                return Logger::LogStyles::LogColors::LOG_GREEN + "size_t" + Logger::LogStyles::LOG_STYLE_RESET;
             } else {
-                return std::string(typeid(T).name()); // Return verbose definiton
+                return Logger::LogStyles::LogColors::LOG_BLUE + std::string(typeid(T).name()) + Logger::LogStyles::LOG_STYLE_RESET;
             }
         #endif // VERBOSE
     }
-#ifdef VERBOSE
+
     template<>
     inline std::string LogArgumentType<uint8_t>(const uint8_t&) {
-        return "uint8_t";
+        return Logger::LogStyles::LogColors::LOG_GREEN + "uint8_t" + Logger::LogStyles::LOG_STYLE_RESET;
     }
 
     template<>
     inline std::string LogArgumentType<uint16_t>(const uint16_t&) {
-        return "uint16_t";
+        return Logger::LogStyles::LogColors::LOG_GREEN + "uint16_t" + Logger::LogStyles::LOG_STYLE_RESET;
     }
 
     template<>
     inline std::string LogArgumentType<uint32_t>(const uint32_t&) {
-        return "uint32_t";
+        return Logger::LogStyles::LogColors::LOG_GREEN + "uint32_t" + Logger::LogStyles::LOG_STYLE_RESET;
     }
 
     // Specializations for signed integers
     template<>
     inline std::string LogArgumentType<int8_t>(const int8_t&) {
-        return "int8_t";
+        return Logger::LogStyles::LogColors::LOG_GREEN + "int8_t" + Logger::LogStyles::LOG_STYLE_RESET;
     }
 
     template<>
     inline std::string LogArgumentType<int16_t>(const int16_t&) {
-        return "int16_t";
+        return Logger::LogStyles::LogColors::LOG_GREEN + "int16_t" + Logger::LogStyles::LOG_STYLE_RESET;
     }
 
     template<>
     inline std::string LogArgumentType<int32_t>(const int32_t&) {
-        return "int32_t";
+        return Logger::LogStyles::LogColors::LOG_GREEN + "int32_t" + Logger::LogStyles::LOG_STYLE_RESET;
     }
-#endif // VERBOSE
+
     template<typename... Args>
     inline std::string LogArgumentTypes(const Args&... args) {
         std::string result;
         ((result += LogArgumentType(args) + ", "), ...); 
         return result;
     }
+    inline std::string ProcessToName(size_t process) {
+        std::string processIDName;
+            switch(process) {
+            case 0:
+                processIDName = Logger::LogStyles::LogColors::LOG_CYAN + "WINDOW_PROCESS" + Logger::LogStyles::LOG_STYLE_RESET;
+                break;
+            case 1:
+                processIDName = Logger::LogStyles::LogColors::LOG_CYAN +  "APP_PROCESS" + Logger::LogStyles::LOG_STYLE_RESET;
+                break;
+            case 2:
+                processIDName = Logger::LogStyles::LogColors::LOG_CYAN + "RENDER_PROCESS" + Logger::LogStyles::LOG_STYLE_RESET;
+                break;
+            case 3:
+                processIDName = Logger::LogStyles::LogColors::LOG_CYAN + "EVENT_PROCESS" + Logger::LogStyles::LOG_STYLE_RESET;
+                break;
+            case 65535:
+                processIDName = Logger::LogStyles::LogColors::LOG_CYAN + "MAIN_PROCESS" + Logger::LogStyles::LOG_STYLE_RESET;
+                break;
+            default:
+                break;
+        }
+        return processIDName;
+    }
+   
     template<typename... Args>
     inline void MassLogArguments(const char* moduleName, const char* functionName, Args... args) {
         // Log the function call
@@ -289,29 +316,91 @@ namespace Logger {
         (void)dummy3;
         std::cerr << std::endl;
     }
+    inline std::string CMakeTargetPlatformToSystemPlatform(const char* platform) {
+        if (platform == "Windows") {
+            return std::string("WIN32_");
+        } else if(platform == "Linux") {
+            return std::string("UNIX_");
+        } else if(platform == "Darwin") {
+            return std::string("DARWIN_");
+        } else {
+            Logger::Log(stderr, LogType::LOG_ERROR, 65535, "We do not support your platform. How you made it this far im not sure.");
+            std::exit(-1);
+        }
+    }
+
     template<typename... Args>
-    void MassLogArgumentsAsync(const char* moduleName, size_t TaskID, size_t process, const char* functionName, Args... args) {
+    inline void MassLogArgumentsAsync(const char* moduleName, size_t TaskID, size_t process, const char* functionName, Args... args) {
         std::ostringstream logStream;
     #ifdef VERBOSE 
-        logStream << "WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC("
-        << moduleName << ", " << functionName << ", ";
+        logStream << Logger::LogStyles::LogColors::LOG_YELLOW << CMakeTargetPlatformToSystemPlatform(TARGET_PLATFORM) << "CALL_MODULE_FUNCTION_ARGS_ASYNC"
+        << Logger::LogStyles::LOG_STYLE_RESET << Logger::LogStyles::LogColors::LOG_MAGENTA << "("
+        << Logger::LogStyles::LOG_STYLE_RESET << Logger::LogStyles::LogColors::LOG_COLOR_STRING
+        << moduleName << Logger::LogStyles::LOG_STYLE_RESET << ", "
+        << Logger::LogStyles::LogColors::LOG_YELLOW << functionName
+        << Logger::LogStyles::LOG_STYLE_RESET << ", " << Logger::ProcessToName(process) << ", " ;
     #else 
         size_t lastSlashPos = std::string(moduleName).find_last_of('/');
         if (lastSlashPos != std::string::npos) {
             std::string moduleNameSubstring = std::string(moduleName).substr(lastSlashPos + 1);
-            logStream << "WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC("
-                    << moduleNameSubstring << ", " << functionName << ", ";
+            logStream << Logger::LogStyles::LogColors::LOG_YELLOW << CMakeTargetPlatformToSystemPlatform(TARGET_PLATFORM) << "CALL_MODULE_FUNCTION_ARGS_ASYNC" <<
+            Logger::LogStyles::LOG_STYLE_RESET << Logger::LogStyles::LogColors::LOG_MAGENTA << "(" <<
+            Logger::LogStyles::LOG_STYLE_RESET << Logger::LogStyles::LogColors::LOG_COLOR_STRING << 
+            moduleNameSubstring << Logger::LogStyles::LOG_STYLE_RESET << ", " << 
+            Logger::LogStyles::LogColors::LOG_YELLOW << functionName << Logger::LogStyles::LOG_STYLE_RESET << 
+            ", " << Logger::ProcessToName(process) << ", " ;
         } else {
-            logStream << "WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC("
-                    << moduleName << ", " << functionName << ", ";
+            logStream << Logger::LogStyles::LogColors::LOG_YELLOW << CMakeTargetPlatformToSystemPlatform(TARGET_PLATFORM)
+            << "CALL_MODULE_FUNCTION_ARGS_ASYNC"
+            << Logger::LogStyles::LOG_STYLE_RESET << Logger::LogStyles::LogColors::LOG_MAGENTA << "("
+            << Logger::LogStyles::LOG_STYLE_RESET << Logger::LogStyles::LogColors::LOG_COLOR_STRING
+            << moduleName << Logger::LogStyles::LOG_STYLE_RESET << ", "
+            << Logger::LogStyles::LogColors::LOG_YELLOW << functionName
+            << Logger::LogStyles::LOG_STYLE_RESET << ", " << Logger::LogStyles::LOG_STYLE_RESET
+            << ", " << Logger::ProcessToName(process) << ", " ;
         }
     #endif // VERBOSE
         size_t argCount = sizeof...(Args);
         size_t i = 0;
-        ((logStream << "(" << Logger::LogArgumentType(args) << ")" << args << (i != argCount - 1 ? ", " : ""), ++i), ...);
-        logStream << ")";
+        ((logStream << Logger::LogStyles::LogColorAttributes::LOG_BLUE_BOLD << 
+        "(" << Logger::LogStyles::LOG_STYLE_RESET <<  Logger::LogArgumentType(args) <<
+        Logger::LogStyles::LogColorAttributes::LOG_BLUE_BOLD << ")" <<
+        Logger::LogStyles::LOG_STYLE_RESET << Logger::LogStyles::LogColors::LOG_GREY << args <<
+        Logger::LogStyles::LOG_STYLE_RESET << (i != argCount - 1 ? ", " : ""), ++i), ...);
+        logStream << Logger::LogStyles::LogColors::LOG_MAGENTA << ")";
         Logger::Log(stdout, LogType::ASYNC_TASK, TaskID, logStream.str().c_str());
     }
-
+    inline void MassLogAsync(const char* moduleName, size_t TaskID, size_t process, const char* functionName) {
+        std::ostringstream logStream;
+    #ifdef VERBOSE 
+        logStream << Logger::LogStyles::LogColors::LOG_YELLOW << CMakeTargetPlatformToSystemPlatform(TARGET_PLATFORM) << "CALL_MODULE_FUNCTION_ASYNC"
+        << Logger::LogStyles::LOG_STYLE_RESET << Logger::LogStyles::LogColors::LOG_MAGENTA << "("
+        << Logger::LogStyles::LOG_STYLE_RESET << Logger::LogStyles::LogColors::LOG_COLOR_STRING
+        << moduleName << Logger::LogStyles::LOG_STYLE_RESET << ", "
+        << Logger::LogStyles::LogColors::LOG_YELLOW << functionName
+        << Logger::LogStyles::LOG_STYLE_RESET << ", " << Logger::ProcessToName(process) ;
+    #else 
+        size_t lastSlashPos = std::string(moduleName).find_last_of('/');
+        if (lastSlashPos != std::string::npos) {
+            std::string moduleNameSubstring = std::string(moduleName).substr(lastSlashPos + 1);
+            logStream << Logger::LogStyles::LogColors::LOG_YELLOW << CMakeTargetPlatformToSystemPlatform(TARGET_PLATFORM) << "CALL_MODULE_FUNCTION_ASYNC" <<
+            Logger::LogStyles::LOG_STYLE_RESET << Logger::LogStyles::LogColors::LOG_MAGENTA << "(" <<
+            Logger::LogStyles::LOG_STYLE_RESET << Logger::LogStyles::LogColors::LOG_COLOR_STRING << 
+            moduleNameSubstring << Logger::LogStyles::LOG_STYLE_RESET << ", " << 
+            Logger::LogStyles::LogColors::LOG_YELLOW << functionName << Logger::LogStyles::LOG_STYLE_RESET << 
+            ", " << Logger::ProcessToName(process);
+        } else {
+            logStream << Logger::LogStyles::LogColors::LOG_YELLOW << CMakeTargetPlatformToSystemPlatform(TARGET_PLATFORM) << "CALL_MODULE_FUNCTION_ASYNC"
+            << Logger::LogStyles::LOG_STYLE_RESET << Logger::LogStyles::LogColors::LOG_MAGENTA << "("
+            << Logger::LogStyles::LOG_STYLE_RESET << Logger::LogStyles::LogColors::LOG_COLOR_STRING
+            << moduleName << Logger::LogStyles::LOG_STYLE_RESET << ", "
+            << Logger::LogStyles::LogColors::LOG_YELLOW << functionName
+            << Logger::LogStyles::LOG_STYLE_RESET << ", " << Logger::LogStyles::LOG_STYLE_RESET
+            << ", " << Logger::ProcessToName(process);
+        }
+    #endif // VERBOSE
+        logStream << Logger::LogStyles::LogColors::LOG_MAGENTA << ")";
+        Logger::Log(stdout, LogType::ASYNC_TASK, TaskID, logStream.str().c_str());
+    }
 }
 

@@ -36,7 +36,14 @@ public:
         };
         AddProcess(Process, taskFunc, lambda);
     }
-    
+    template<typename Function, typename... Args>
+    inline void AddTaskNoLog(Function&& func, size_t Process, Args&&... args) {
+        auto taskFunc = [func, args...]() {
+            func(args...);
+        };
+        AddProcessNoLog(Process, taskFunc);
+        IncrementTaskCount(Process);
+    }
     template<typename Function>
     inline void AddTaskNoLog(Function&& func, size_t Process) {
         auto taskFunc = [func]() {
@@ -45,49 +52,35 @@ public:
         AddProcessNoLog(Process, taskFunc);
     }
 
-    template<typename Function, typename... Args>
-    inline void AddTaskNoLog(Function&& func, size_t Process, Args&&... args) {
-        auto taskFunc = [func, args...]() {
-            func(args...);
-        };
-        AddProcessNoLog(Process, taskFunc);
-    }
+    
 
     inline void ExecuteTasks(size_t Process) {
         int i = 0;
     #ifdef LOGGING
-        Logger::Log(stdout, LogType::STATUS, 0, "Executing Process [%zu]", Process);
+        std::string processIDName;
+        processIDName = Logger::ProcessToName(Process);
+        std::string processLogMessage = Logger::LogStyles::LogColorAttributes::LOG_WHITE_BOLD + 
+        "Executing Process " + Logger::LogStyles::LOG_STYLE_RESET + Logger::LogStyles::LogColorAttributes::LOG_CYAN_BOLD + "[" + Logger::LogStyles::LOG_STYLE_RESET + 
+        processIDName + Logger::LogStyles::LogColorAttributes::LOG_CYAN_BOLD + "]" + 
+        Logger::LogStyles::LOG_STYLE_RESET;
+        Logger::Log(stdout, LogType::STATUS, 0, "%s", processLogMessage.c_str());
     #endif // LOGGING
-        
         auto& taskVec = taskInfos[Process];
         for (auto& taskInfo : taskVec) {
             auto& taskFunc = taskInfo.first;
             auto& lambda = taskInfo.second;
     #ifdef LOGGING
-            Logger::Log(stdout, LogType::SUBSTATUS, 0, "Executing Task    [%i]", i);
+            std::string TaskLogMessage = Logger::LogStyles::LogColorAttributes::LOG_WHITE_BOLD + 
+            "Executing Task    " + Logger::LogStyles::LOG_STYLE_RESET + Logger::LogStyles::LogColorAttributes::LOG_BLUE_BOLD + "[" + Logger::LogStyles::LOG_STYLE_RESET +
+            Logger::LogStyles::LogColors::LOG_BLUE + std::to_string(i) + Logger::LogStyles::LogColorAttributes::LOG_BLUE_BOLD + "]" + 
+            Logger::LogStyles::LOG_STYLE_RESET;
+            Logger::Log(stdout, LogType::SUBSTATUS, 0, "%s", TaskLogMessage.c_str());
     #endif // LOGGING
             lambda(); // CALL LAMBDA
             processThreads[Process].emplace_back(taskFunc);
-            
             i++;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(50)); // Add Delay for Process variables to become initialized.
-        
-            
-    }
-
-
-    inline void ExecuteProcesses() {
-        for (auto& process : tasks) {
-            ExecuteTasks(process.first);
-        }
-
-        
-
-        for (auto& process : tasks) {
-            process.second.clear();
-            processThreads[process.first].clear();
-        }
     }
 
     inline void WaitProcess(size_t Process) {
@@ -141,24 +134,14 @@ private:
         std::lock_guard<std::mutex> lock(mutex);
         auto& taskVec = taskInfos[Process];
         taskVec.emplace_back(std::move(func), std::move(lambda));
-
-        auto processIterator = tasks.find(Process);
-        if (processIterator != tasks.end()) {
-            processIterator->second.emplace_back(taskVec.back().first);
-        } else {
-            tasks[Process] = { taskVec.back().first };
-        }
     }
-    
+
     inline void AddProcessNoLog(size_t Process, std::function<void()>&& func) {
-    std::lock_guard<std::mutex> lock(mutex);
-        auto processIterator = tasks.find(Process);
-        if (processIterator != tasks.end()) {
-            processIterator->second.emplace_back(func);
-        } else {
-            tasks[Process] = { func };
-        }
-    }   
+        std::lock_guard<std::mutex> lock(mutex);
+        auto& taskVec = taskInfos[Process];
+        taskVec.emplace_back(std::move(func), [](){}); // An empty lambda as placeholder for no logging
+        tasks[Process] = { taskVec.back().first };
+    }
 
     void IncrementTaskCount(size_t Process) {
         std::lock_guard<std::mutex> lock(mutex);

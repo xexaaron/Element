@@ -5,7 +5,9 @@
 #include <sstream>
 #include <iostream>
 #include <string>
+
 namespace Logger {
+
     namespace LogStyles {
         static const std::string LOG_STYLE_RESET = "\033[0m";
         namespace LogColors {
@@ -16,6 +18,9 @@ namespace Logger {
             static const std::string LOG_MAGENTA = "\033[35m";
             static const std::string LOG_CYAN = "\033[36m";
             static const std::string LOG_WHITE = "\033[37m";
+            static const std::string LOG_GRAY = "\033[90m";
+            static const std::string LOG_GREY = "\033[90m";
+            static const std::string LOG_COLOR_STRING = "\033[31m";
         }
         namespace LogAttributes {
             static const std::string LOG_UNDERLINE = "\033[4m";
@@ -111,8 +116,6 @@ namespace Logger {
         }
    
     }
-    
-   
     static std::string LOG_COLOR;
     inline std::string ComputeHeader(LogType type, size_t id) {
         std::string Header;
@@ -165,26 +168,7 @@ namespace Logger {
         }
         return LOG_COLOR + Header + LogStyles::LOG_STYLE_RESET;
     }
-    inline void LogAsyncResult(FILE* stream, LogType type, size_t id, const char* format, ...) {
-        std::string Header = ComputeHeader(type, id);
-        std::string str = "placeholder";
-        std::cout << "\r";
-        std::cout << "\x1b[A";
-        while (str != "") {
-            std::getline(std::cin, str);
-            std::cout << "\x1b[A";
-        }
-        std::cout << "\r";
-        va_list args;
-        va_start(args, format);
-        
-
-        fprintf(stream, "%s", Header.c_str());
-        vfprintf(stream, format, args);
-        fprintf(stream, "\n");
-
-        va_end(args);
-    }
+    
     inline void Log(FILE* stream, LogType type, size_t id, const char* format, ...) {
         
 
@@ -197,5 +181,88 @@ namespace Logger {
         fprintf(stream, "\n");
 
         va_end(args);
+    }
+
+    template<typename T>
+    inline std::string LogArgument(const std::basic_string<T>& arg) {
+        return std::string("\"") + std::string(arg.begin(), arg.end()) + std::string("\"");
+    }
+    template<typename... Args>
+    inline std::string LogArguments(const Args&... args) {
+        std::string result;
+        size_t count = 0;
+        size_t argumentsCount = sizeof...(Args);
+        ((result += LogArgument(args) + (++count != argumentsCount ? ", " : "")), ...);
+        return result;
+    }
+    template<typename... Args>
+    void LogArgumentsAndTypes(const Args&... args) {  
+        int dummy[] = {0, ((void)(std::cerr << "(" << LogArgumentType(args) << ")" << args << " "), 0)...};
+        (void)dummy;
+        
+    }
+    template<typename T>
+    inline std::string LogArgumentType(const T&) {
+        #ifdef VERBOSE
+            return Logger::LogStyles::LogColors::LOG_BLUE + std::string(typeid(T).name()) + Logger::LogStyles::LOG_STYLE_RESET;
+        #else // BASIC
+            if constexpr (std::is_same_v<T, std::string>) {
+                return Logger::LogStyles::LogColors::LOG_GREEN + "std::string" + Logger::LogStyles::LOG_STYLE_RESET;
+            } else if constexpr (std::is_same_v<T, int>) {
+                return Logger::LogStyles::LogColors::LOG_BLUE + "int" + Logger::LogStyles::LOG_STYLE_RESET;
+            } else if constexpr (std::is_same_v<T, float>) {
+                return Logger::LogStyles::LogColors::LOG_BLUE + "float" + Logger::LogStyles::LOG_STYLE_RESET;
+            } else if constexpr (std::is_same_v<T, double>) {
+                return Logger::LogStyles::LogColors::LOG_BLUE + "double" + Logger::LogStyles::LOG_STYLE_RESET;
+            } else if constexpr (std::is_same_v<T, char>) {
+                return Logger::LogStyles::LogColors::LOG_BLUE + "char" + Logger::LogStyles::LOG_STYLE_RESET;
+            } else if constexpr (std::is_same_v<T, bool>) {
+                return Logger::LogStyles::LogColors::LOG_BLUE + "bool" + Logger::LogStyles::LOG_STYLE_RESET;
+            } else if constexpr (std::is_same_v<T, const char*>) {
+                return Logger::LogStyles::LogColors::LOG_BLUE + "const char*" + Logger::LogStyles::LOG_STYLE_RESET;
+            } else if constexpr (std::is_same_v<T, size_t>){
+                return Logger::LogStyles::LogColors::LOG_GREEN + "size_t" + Logger::LogStyles::LOG_STYLE_RESET;
+            } else {
+                return Logger::LogStyles::LogColors::LOG_BLUE + std::string(typeid(T).name()) + Logger::LogStyles::LOG_STYLE_RESET;
+            }
+        #endif // VERBOSE
+    }
+
+    template<>
+    inline std::string LogArgumentType<uint8_t>(const uint8_t&) {
+        return Logger::LogStyles::LogColors::LOG_GREEN + "uint8_t" + Logger::LogStyles::LOG_STYLE_RESET;
+    }
+
+    template<>
+    inline std::string LogArgumentType<uint16_t>(const uint16_t&) {
+        return Logger::LogStyles::LogColors::LOG_GREEN + "uint16_t" + Logger::LogStyles::LOG_STYLE_RESET;
+    }
+
+    template<>
+    inline std::string LogArgumentType<uint32_t>(const uint32_t&) {
+        return Logger::LogStyles::LogColors::LOG_GREEN + "uint32_t" + Logger::LogStyles::LOG_STYLE_RESET;
+    }
+
+    // Specializations for signed integers
+    template<>
+    inline std::string LogArgumentType<int8_t>(const int8_t&) {
+        return Logger::LogStyles::LogColors::LOG_GREEN + "int8_t" + Logger::LogStyles::LOG_STYLE_RESET;
+    }
+
+    template<>
+    inline std::string LogArgumentType<int16_t>(const int16_t&) {
+        return Logger::LogStyles::LogColors::LOG_GREEN + "int16_t" + Logger::LogStyles::LOG_STYLE_RESET;
+    }
+
+    template<>
+    inline std::string LogArgumentType<int32_t>(const int32_t&) {
+        return Logger::LogStyles::LogColors::LOG_GREEN + "int32_t" + Logger::LogStyles::LOG_STYLE_RESET;
+    }
+
+    template<typename... Args>
+    inline std::string LogArgumentTypes(const Args&... args) {
+        std::string result;
+        ((result += LogArgumentType(args) + ", "), ...); 
+        return result;
     }
 }

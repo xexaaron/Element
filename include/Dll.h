@@ -87,14 +87,13 @@ inline RetType WIN32_CALL_MODULE_FUNCTION_ASYNC(const char* MODULE, const char* 
         auto lambda = [MODULE, TaskID, FUNCTION_NAME, Process]() {
             size_t lastSlashPos = std::string(MODULE).find_last_of('/');
             std::string moduleNameSubstring = std::string(MODULE).substr(lastSlashPos + 1);
-            Logger::Log(stdout, LogType::ASYNC_TASK, TaskID, "WIN32_CALL_MODULE_FUNCTION_ASYNC(%s, %s, %zu)", moduleNameSubstring.c_str(), FUNCTION_NAME, Process);
+            Logger::MassLogAsync(MODULE, TaskID, Process, FUNCTION_NAME);
         };
+    #else
+        auto lambda = [](){};
+    #endif // LOGGING
         ThreadManager::GetInstance().AddTask(function, Process, lambda);
         return RetType{};
-    #else 
-        ThreadManager::GetInstance().AddTaskNoLog(function, Process);
-        return RetType{};
-    #endif // LOGGING
     } else {
         Logger::Log(stderr, LogType::LOG_ERROR, 0, "Failed to find function %s in module %s : %s", MODULE, FUNCTION_NAME, GetLastError());
         // Return a default value for RetType in case of failure
@@ -122,18 +121,16 @@ inline RetType WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC(const char* MODULE, const c
     HMODULE moduleHandle = LoadedModules[MODULE];
     using FunctionType = RetType(*)(Args...);
     FunctionType function = reinterpret_cast<FunctionType>(GetProcAddress(moduleHandle, FUNCTION_NAME));
-
     if (function != nullptr) {
     #ifdef LOGGING
         size_t TaskID = ThreadManager::GetInstance().GetTaskCount(Process);
         auto lambda = [MODULE, TaskID, Process, FUNCTION_NAME, args...](){
             Logger::MassLogArgumentsAsync(MODULE, TaskID, Process, FUNCTION_NAME, args...);
         };
-        ThreadManager::GetInstance().AddTask(function, Process, lambda,  args...);
-    #else 
-        ThreadManager::GetInstance().AddTaskNoLog(function, Process,  args...);
+    #else
+        auto lambda = [](){};
     #endif // LOGGING
-       
+        ThreadManager::GetInstance().AddTask(function, Process, lambda,  args...);
         return RetType(0);
     } else {
         Logger::Log(stderr, LogType::LOG_ERROR, 0, "Failed to find function %s in module %s : %s", MODULE, FUNCTION_NAME, GetLastError());

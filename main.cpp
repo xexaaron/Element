@@ -11,8 +11,10 @@ void LogProgramBegin() {
     for (int i = 0; i < 100; ++i) {
         std::cout << std::endl;
     }
-    Logger::Log(stdout, LogType::LOG, 0, "Flushed Console");
-    Logger::Log(stdout, LogType::LOG, 0, "Program Execute");
+    std::string flush = Logger::LogStyles::LogColorAttributes::LOG_WHITE_BOLD + "Flushed Console" + Logger::LogStyles::LOG_STYLE_RESET;
+    std::string exec = Logger::LogStyles::LogColorAttributes::LOG_WHITE_BOLD + "Program Execute" + Logger::LogStyles::LOG_STYLE_RESET;
+    Logger::Log(stdout, LogType::LOG, 0, "%s", flush.c_str());
+    Logger::Log(stdout, LogType::LOG, 0, exec.c_str());
 }
 
 
@@ -26,10 +28,6 @@ int main() {
     Data.Position = Vector2D<int>{0, 0};
     Data.State = EWindowState::FULLSCREEN;
     Window* AppWindow = new Window(Data);
-    Name a("Bob");
-    printf("a : %s\n", a);
-    printf("type of a : %s\n", typeid(a).name());
-
     if (AppWindow) {
         AppWindow->SetSize(Vector2D<int>(500, 500));
         AppWindow->SetBackgroundColor(Vector3D<uint32_t>(255, 0, 0));
@@ -38,7 +36,10 @@ int main() {
     }
     
     ThreadManager::GetInstance().ExecuteTasks(WINDOW_PROCESS);
-    
+    ThreadManager::GetInstance().ExecuteTasks(RENDER_PROCESS);
+    ThreadManager::GetInstance().ExecuteTasks(MAIN_PROCESS);
+    ThreadManager::GetInstance().WaitProcess(WINDOW_PROCESS);
+    std::cout << "Testing" << std::endl;
     return 0;
 }
 
