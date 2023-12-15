@@ -1,5 +1,6 @@
 #include "include/Window.h"
 #include "include/Logger.h"
+#include "include/Structs.h"
 #include <iostream>
 #include <string>
 #include <cmath> 
@@ -25,13 +26,17 @@ int main() {
     Data.Position = Vector2D<int>{0, 0};
     Data.State = EWindowState::FULLSCREEN;
     Window* AppWindow = new Window(Data);
-    
+    Name a("Bob");
+    printf("a : %s\n", a);
+    printf("type of a : %s\n", typeid(a).name());
+
     if (AppWindow) {
         AppWindow->SetSize(Vector2D<int>(500, 500));
         AppWindow->SetBackgroundColor(Vector3D<uint32_t>(255, 0, 0));
         AppWindow->SetPosition(Vector2D<int>(950, 500));
         AppWindow->SetTitle("Testing Testing");
     }
+    
     ThreadManager::GetInstance().ExecuteTasks(WINDOW_PROCESS);
     
     return 0;

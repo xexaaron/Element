@@ -40,8 +40,8 @@ Name Base::GetName() {
 }
 
 Name Base::GetParentName() {
-    if (m_ParentName.c_str() == "") {
-        fprintf(stderr, "ERROR -> %s::GetParentName() : Object does not have a parent",GetName().c_str());
+    if (m_ParentName == "") {
+        fprintf(stderr, "ERROR -> %s::GetParentName() : Object does not have a parent",GetName());
         return "";
     }
     return m_ParentName;

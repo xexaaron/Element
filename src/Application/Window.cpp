@@ -50,7 +50,7 @@ void Window::SetSize(Vector2D<int> size) {
 }
 void Window::SetData(SWindowData data) {
     SetBackgroundColor(data.BackgroundColor);
-    SetTitle(data.Title.c_str());
+    SetTitle(data.Title);
     SetState(data.State);
     SetPosition(data.Position);
     SetSize(data.Size);

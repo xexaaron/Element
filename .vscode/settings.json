@@ -70,7 +70,10 @@
         "xutility": "cpp",
         "mutex": "cpp",
         "codecvt": "cpp",
-        "future": "cpp"
+        "future": "cpp",
+        "condition_variable": "cpp",
+        "coroutine": "cpp",
+        "resumable": "cpp"
     },
     "files.exclude": {
         "**/html/**": true,

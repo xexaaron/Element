@@ -12,146 +12,12 @@
 #include <sstream>
 #include "Logger.h"
 #include "Enums.h"
+#include "Structs.h"
+
 // Just wanted to try out concepts
-template<typename T>
-concept StringType = std::is_convertible_v<T, std::string>;
-template<typename T>
-inline std::string LogArgument(const T& arg) {
-    if constexpr (StringType<T>) {
-        return std::string("\"") + std::string(arg) + std::string("\"");
-    } else {
-        return std::to_string(arg);
-    }
-}
-template<typename T>
-inline std::string LogArgument(const std::basic_string<T>& arg) {
-    return std::string("\"") + std::string(arg.begin(), arg.end()) + std::string("\"");
-}
-template<typename... Args>
-inline std::string LogArguments(const Args&... args) {
-    std::string result;
-    size_t count = 0;
-    size_t argumentsCount = sizeof...(Args);
-    ((result += LogArgument(args) + (++count != argumentsCount ? ", " : "")), ...);
-    return result;
-}
-template<typename... Args>
-void LogArgumentsAndTypes(const Args&... args) {  
-    int dummy[] = {0, ((void)(std::cerr << "(" << LogArgumentType(args) << ")" << args << " "), 0)...};
-    (void)dummy;
-    
-}
-template<typename T>
-inline std::string LogArgumentType(const T&) {
-    #ifdef VERBOSE
-        return std::string(typeid(T).name());
-    #else // BASIC
-        if constexpr (std::is_same_v<T, std::string>) {
-            return "std::string";
-        } else if constexpr (std::is_same_v<T, int>) {
-            return "int";
-        } else if constexpr (std::is_same_v<T, float>) {
-            return "float";
-        } else if constexpr (std::is_same_v<T, double>) {
-            return "double";
-        } else if constexpr (std::is_same_v<T, char>) {
-            return "char";
-        } else if constexpr (std::is_same_v<T, bool>) {
-            return "bool";
-        } else {
-            return std::string(typeid(T).name()); // Return verbose definiton
-        }
-    #endif // VERBOSE
-}
-#ifdef VERBOSE
-        template<>
-    inline std::string LogArgumentType<uint8_t>(const uint8_t&) {
-        return "uint8_t";
-    }
-
-    template<>
-    inline std::string LogArgumentType<uint16_t>(const uint16_t&) {
-        return "uint16_t";
-    }
-
-    template<>
-    inline std::string LogArgumentType<uint32_t>(const uint32_t&) {
-        return "uint32_t";
-    }
-
-    // Specializations for signed integers
-    template<>
-    inline std::string LogArgumentType<int8_t>(const int8_t&) {
-        return "int8_t";
-    }
-
-    template<>
-    inline std::string LogArgumentType<int16_t>(const int16_t&) {
-        return "int16_t";
-    }
-
-    template<>
-    inline std::string LogArgumentType<int32_t>(const int32_t&) {
-        return "int32_t";
-    }
-#endif // VERBOSE
-template<typename... Args>
-inline std::string LogArgumentTypes(const Args&... args) {
-    std::string result;
-    ((result += LogArgumentType(args) + ", "), ...); 
-    return result;
-}
-template<typename... Args>
-inline void MassLogArguments(const char* moduleName, const char* functionName, Args... args) {
-    // Log the function call
-    size_t lastSlashPos = std::string(moduleName).find_last_of('/');
-    if (lastSlashPos != std::string::npos) {
-        std::string moduleNameSubstring = std::string(moduleName).substr(lastSlashPos + 1);
 
 
 
-        std::cerr << "---- NON ASYNC TASK : WIN32_CALL_MODULE_FUNCTION_ARGS("
-                << moduleNameSubstring << ", " << functionName << ", " << LogArguments(args...) << ")" << std::endl;
-    } else {
-        std::cerr << "---- NON ASYNC TASK : WIN32_CALL_MODULE_FUNCTION_ARGS("
-                << moduleName << ", " << functionName << ", " << LogArguments(args...) << ")" << std::endl;
-    }
-
-    // Log Argument Types
-    std::cerr << "Argument Types  : ";
-    int dummy2[] = {0, ((void)(std::cerr << LogArgumentType(args) << " "), 0)...};
-    (void)dummy2;
-    std::cerr << std::endl;
-
-    // Log Arguments
-    std::cerr << "Arguments       : ";
-    int dummy3[] = {0, ((void)(std::cerr << args << " "), 0)...};
-    (void)dummy3;
-    std::cerr << std::endl;
-}
-template<typename... Args>
-void MassLogArgumentsAsync(const char* moduleName, size_t TaskID, size_t process, const char* functionName, Args... args) {
-    std::ostringstream logStream;
-#ifdef VERBOSE 
-     logStream << "WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC("
-    << moduleName << ", " << functionName << ", ";
-#else 
-    size_t lastSlashPos = std::string(moduleName).find_last_of('/');
-    if (lastSlashPos != std::string::npos) {
-        std::string moduleNameSubstring = std::string(moduleName).substr(lastSlashPos + 1);
-        logStream << "WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC("
-                  << moduleNameSubstring << ", " << functionName << ", ";
-    } else {
-        logStream << "WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC("
-                  << moduleName << ", " << functionName << ", ";
-    }
-#endif // VERBOSE
-    size_t argCount = sizeof...(Args);
-    size_t i = 0;
-    ((logStream << "(" << LogArgumentType(args) << ")" << args << (i != argCount - 1 ? ", " : ""), ++i), ...);
-    logStream << ")";
-    Logger::Log(stdout, LogType::ASYNC_TASK, TaskID, logStream.str().c_str());
-}
 #ifdef _WIN32
 #include <windows.h>
 inline static std::map<const char*, HINSTANCE> LoadedModules;
@@ -241,7 +107,7 @@ inline RetType WIN32_CALL_MODULE_FUNCTION_ARGS(const char* MODULE, const char* F
     using FunctionType = RetType(*)(Args...);
     FunctionType function = reinterpret_cast<FunctionType>(GetProcAddress(moduleHandle, FUNCTION_NAME));
 #ifdef LOGGING
-    MassLogArguments(MODULE, FUNCTION_NAME, args...);
+    Logger::MassLogArguments(MODULE, FUNCTION_NAME, args...);
 #endif // LOGGING
     if (function != nullptr) {
         return function(args...);
@@ -261,7 +127,7 @@ inline RetType WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC(const char* MODULE, const c
     #ifdef LOGGING
         size_t TaskID = ThreadManager::GetInstance().GetTaskCount(Process);
         auto lambda = [MODULE, TaskID, Process, FUNCTION_NAME, args...](){
-            MassLogArgumentsAsync(MODULE, TaskID, Process, FUNCTION_NAME, args...);
+            Logger::MassLogArgumentsAsync(MODULE, TaskID, Process, FUNCTION_NAME, args...);
         };
         ThreadManager::GetInstance().AddTask(function, Process, lambda,  args...);
     #else 
@@ -342,7 +208,7 @@ inline RetType WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC(const char* MODULE, const c
                 // Cast the function pointer to the appropriate type
                 FunctionType func = reinterpret_cast<FunctionType>(function);
             #ifdef LOGGING // Use #define VERBOSE to log verbose types
-                    MassLogArguments(MODULE, FUNCTION_NAME, args...);
+                    Logger::MassLogArguments(MODULE, FUNCTION_NAME, args...);
             #endif // LOG_ARGS
                 return func(args...);
             } else {
