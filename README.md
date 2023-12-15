@@ -1,9 +1,8 @@
 # README.md
 
-# Build Scripts
+## Build Scripts
 
-## [Windows](./Build.bat)
-
+### [Windows](./Build.bat) 
 <details closed>
 
 <summary>Collapse</summary>
@@ -19,7 +18,7 @@
 
 </details>
 
-## [Linux](./Build.sh)
+### [Linux](./Build.sh)
 
 <details closed>
 
