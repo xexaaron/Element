@@ -12,8 +12,10 @@ set "consoleLoggingFlag=false"
 set "fileLoggingFlag=false"
 
 
-
-
+cd "Window/Windows"
+call Build.bat
+cd ".."
+cd ".."
 
 
 :ProcessArgs

@@ -169,10 +169,13 @@ namespace Logger {
         std::string Header = ComputeHeader(type, id);
         va_list args;
         va_start(args, format);
-    
+        
         fprintf(stream, "%s", Header.c_str());
         vfprintf(stream, format, args);
         fprintf(stream, "\n");
+        if (type == LogType::ASYNC_TASK) {
+            fprintf(stream, "\n");   
+        }
         va_end(args);
     }
     template<typename T>

@@ -2,12 +2,12 @@
 
 Window::Window(SWindowData data)  : Data(data), TargetPlatform(TARGET_PLATFORM) {
         if (TargetPlatform == "Windows") {
-            TargetPlatform = "WIN";
+            TargetPlatform = "WIN32_";
         } else if (TargetPlatform == "Linux") {
-            TargetPlatform = "UNIX";
+            TargetPlatform = "UNIX_";
         }
         LoadModule(WINDOW_DLL);
-        CallModuleFuncAsync<void>(WINDOW_DLL, "CreateAndRunWindow", WINDOW_PROCESS);
+        CallModuleFuncAsync<void>(WINDOW_DLL, AppendPlatform("CreateAndRunWindow"), WINDOW_PROCESS);
 }
 
 Window::~Window() {

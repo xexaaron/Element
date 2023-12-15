@@ -3,6 +3,8 @@
 #include <cstdio>
 #include <cstdarg>
 #include <sstream>
+#include <iostream>
+#include <string>
 namespace Logger {
     namespace LogStyles {
         static const std::string LOG_STYLE_RESET = "\033[0m";
@@ -163,13 +165,33 @@ namespace Logger {
         }
         return LOG_COLOR + Header + LogStyles::LOG_STYLE_RESET;
     }
+    inline void LogAsyncResult(FILE* stream, LogType type, size_t id, const char* format, ...) {
+        std::string Header = ComputeHeader(type, id);
+        std::string str = "placeholder";
+        std::cout << "\r";
+        std::cout << "\x1b[A";
+        while (str != "") {
+            std::getline(std::cin, str);
+            std::cout << "\x1b[A";
+        }
+        std::cout << "\r";
+        va_list args;
+        va_start(args, format);
+        
+
+        fprintf(stream, "%s", Header.c_str());
+        vfprintf(stream, format, args);
+        fprintf(stream, "\n");
+
+        va_end(args);
+    }
     inline void Log(FILE* stream, LogType type, size_t id, const char* format, ...) {
         
 
         std::string Header = ComputeHeader(type, id);
         va_list args;
         va_start(args, format);
-
+        
         fprintf(stream, "%s", Header.c_str());
         vfprintf(stream, format, args);
         fprintf(stream, "\n");
