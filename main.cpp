@@ -17,6 +17,29 @@ void LogProgramBegin() {
     Logger::Log(stdout, LogType::LOG, 0, exec.c_str());
 }
 
+void TestAsyncTasks() {
+    auto TestTask = [](){
+        Logger::Log(stdout, LogType::ASYNC_TASK, ThreadManager::GetInstance().GetTaskCount(MAIN_PROCESS), "I am test task 1");
+    };
+    auto TestTaskLog = []() {
+         Logger::Log(stdout, LogType::ASYNC_TASK, ThreadManager::GetInstance().GetTaskCount(MAIN_PROCESS), "I am test task log 1");
+    };
+    ThreadManager::GetInstance().AddTask(TestTask, MAIN_PROCESS, TestTaskLog);
+    auto TestTask2 = [](){
+        Logger::Log(stdout, LogType::ASYNC_TASK, ThreadManager::GetInstance().GetTaskCount(MAIN_PROCESS), "I am test task 2");
+    };
+    auto TestTaskLog2 = [](){
+        Logger::Log(stdout, LogType::ASYNC_TASK, ThreadManager::GetInstance().GetTaskCount(MAIN_PROCESS), "I am test task log 2");
+    };
+    ThreadManager::GetInstance().AddTask(TestTask2, MAIN_PROCESS, TestTaskLog2);
+    auto TestTask3 = [](){
+        Logger::Log(stdout, LogType::ASYNC_TASK, ThreadManager::GetInstance().GetTaskCount(MAIN_PROCESS), "I am test task 3");
+    };
+    auto TestTaskLog3 = [](){
+        Logger::Log(stdout, LogType::ASYNC_TASK, ThreadManager::GetInstance().GetTaskCount(MAIN_PROCESS), "I am test task log 3");
+    };
+    ThreadManager::GetInstance().AddTask(TestTask3, MAIN_PROCESS, TestTaskLog3);
+}
 
 
 int main() {
@@ -30,16 +53,15 @@ int main() {
     Window* AppWindow = new Window(Data);
     if (AppWindow) {
         AppWindow->SetSize(Vector2D<int>(500, 500));
-        AppWindow->SetBackgroundColor(Vector3D<uint32_t>(255, 0, 0));
+        AppWindow->SetBackgroundColor(Vector3D<uint32_t>());
         AppWindow->SetPosition(Vector2D<int>(950, 500));
-        AppWindow->SetTitle("Testing Testing");
+        AppWindow->SetTitle("Window");
     }
-    
+    TestAsyncTasks();
     ThreadManager::GetInstance().ExecuteTasks(WINDOW_PROCESS);
     ThreadManager::GetInstance().ExecuteTasks(RENDER_PROCESS);
     ThreadManager::GetInstance().ExecuteTasks(MAIN_PROCESS);
     ThreadManager::GetInstance().WaitProcess(WINDOW_PROCESS);
-    std::cout << "Testing" << std::endl;
     return 0;
 }
 
