@@ -166,16 +166,13 @@ namespace Logger {
         return LOG_COLOR + Header + LogStyles::LOG_STYLE_RESET;
     }
     inline void Log(FILE* stream, LogType type, size_t id, const char* format, ...) {
-        
-
         std::string Header = ComputeHeader(type, id);
         va_list args;
         va_start(args, format);
-
+    
         fprintf(stream, "%s", Header.c_str());
         vfprintf(stream, format, args);
         fprintf(stream, "\n");
-
         va_end(args);
     }
     template<typename T>

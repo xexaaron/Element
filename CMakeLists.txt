@@ -16,6 +16,15 @@ endif()
 
 if (${LOGGING} STREQUAL "true")
     add_compile_definitions(LOGGING)
+    add_compile_definitions(CONSOLE_LOGGING)
+endif()
+
+if (${CONSOLE_LOGGING} STREQUAL "true")
+    add_compile_definitions(CONSOLE_LOGGING)
+endif()
+
+if (${FILE_LOGGING} STREQUAL "true")
+    add_compile_definitions(FILE_LOGGING)
 endif()
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
