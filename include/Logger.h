@@ -7,8 +7,8 @@
 #include <sstream>
 namespace Logger {
     namespace LogStyles {
+        static const std::string LOG_STYLE_RESET = "\033[0m";
         namespace LogColors {
-            static const std::string LOG_COLOR_RESET = "\033[0m";
             static const std::string LOG_RED = "\033[31m";
             static const std::string LOG_GREEN = "\033[32m";
             static const std::string LOG_YELLOW = "\033[33m";
@@ -17,7 +17,6 @@ namespace Logger {
             static const std::string LOG_CYAN = "\033[36m";
             static const std::string LOG_WHITE = "\033[37m";
         }
-    #ifdef LOG_ATTRIBUTES
         namespace LogAttributes {
             static const std::string LOG_UNDERLINE = "\033[4m";
             static const std::string LOG_BOLD = "\033[1m";
@@ -27,9 +26,15 @@ namespace Logger {
             static const std::string LOG_HIDDEN = "\033[8m";
             static const std::string LOG_BLINK_SLOW = "\033[5m";
             static const std::string LOG_BLINK_FAST = "\033[6m";
+
+            static const std::string LOG_RESET_UNDERLINE = "\033[24m"; 
+            static const std::string LOG_RESET_BOLD = "\033[22m"; 
+            static const std::string LOG_RESET_ITALIC = "\033[23m"; 
+            static const std::string LOG_RESET_INVERSE = "\033[27m";
+            static const std::string LOG_RESET_STRIKETHROUGH = "\033[29m"; 
+            static const std::string LOG_RESET_HIDDEN = "\033[28m"; 
+            static const std::string LOG_RESET_BLINK = "\033[25m";
         }
-    #endif // LOG_ATTRIBUTES
-    #ifdef LOG_COLOR_ATTRIBUTES 
         namespace LogColorAttributes {
             /** BOLD */
             static const std::string LOG_RED_BOLD = LogColors::LOG_RED + LogAttributes::LOG_BOLD;
@@ -101,10 +106,10 @@ namespace Logger {
             static const std::string LOG_YELLOW_UNDERLINE_BOLD = LogColors::LOG_YELLOW + LogAttributes::LOG_UNDERLINE + LogAttributes::LOG_BOLD;
             static const std::string LOG_BLUE_UNDERLINE_BOLD = LogColors::LOG_BLUE + LogAttributes::LOG_UNDERLINE + LogAttributes::LOG_BOLD;
             static const std::string LOG_MAGENTA_UNDERLINE_BOLD = LogColors::LOG_MAGENTA + LogAttributes::LOG_UNDERLINE + LogAttributes::LOG_BOLD;
-            static const std::string LOG_CYAN_UNDERLINE = LogColors::LOG_CYAN + LogAttributes::LOG_UNDERLINE + LogAttributes::LOG_BOLD;
+            static const std::string LOG_CYAN_UNDERLINE_BOLD = LogColors::LOG_CYAN + LogAttributes::LOG_UNDERLINE + LogAttributes::LOG_BOLD;
             static const std::string LOG_WHITE_UNDERLINE_BOLD = LogColors::LOG_WHITE + LogAttributes::LOG_UNDERLINE + LogAttributes::LOG_BOLD;
         }
-    #endif // LOG_COLOR_ATTRIBUTES
+   
     }
     
    
@@ -115,46 +120,50 @@ namespace Logger {
         switch (type) {
             case LogType::LOG:
                 LOG_COLOR = LogStyles::LogColors::LOG_YELLOW;
-                Header = "LOG                  : ";
+                Header = LogStyles::LogColorAttributes::LOG_YELLOW_UNDERLINE_BOLD + "LOG" + LogStyles::LogAttributes::LOG_RESET_UNDERLINE + "                  : ";
                 break;
             case LogType::STATUS:
                 LOG_COLOR = LogStyles::LogColors::LOG_CYAN;
-                Header = "STATUS               : ";
+                Header = LogStyles::LogColorAttributes::LOG_CYAN_UNDERLINE_BOLD + "STATUS" + LogStyles::LogAttributes::LOG_RESET_UNDERLINE + "               : ";
                 break;
             case LogType::LOG_WARNING:
                 LOG_COLOR = LogStyles::LogColors::LOG_YELLOW;
-                Header = "WARNING              : ";
+                Header = LogStyles::LogColorAttributes::LOG_YELLOW_UNDERLINE_BOLD + "WARNING" + LogStyles::LogAttributes::LOG_RESET_UNDERLINE + "              : ";
                 break;
             case LogType::LOG_ERROR:
                 LOG_COLOR = LogStyles::LogColors::LOG_RED;
-                Header = "ERROR                : ";
+                Header = LogStyles::LogColorAttributes::LOG_RED_UNDERLINE_BOLD + "ERROR" + LogStyles::LogAttributes::LOG_RESET_UNDERLINE + "                : ";
                 break;
             case LogType::SUBSTATUS:
-                LOG_COLOR = LogStyles::LogColors::LOG_BLUE;
+                LOG_COLOR = LogStyles::LogColorAttributes::LOG_BLUE_BOLD;
                 Header = "-- SUBSTATUS         : ";
                 break;
             case LogType::ASYNC_TASK:
                 LOG_COLOR = LogStyles::LogColors::LOG_MAGENTA;
-                Header = "----- ASYNC TASK [" + std::to_string(id) + "] : ";
+                Header = "----- ASYNC TASK " + LogStyles::LogColorAttributes::LOG_MAGENTA_BOLD + "[" + LogStyles::LogAttributes::LOG_RESET_BOLD + std::to_string(id) + 
+                LogStyles::LogColorAttributes::LOG_MAGENTA_BOLD + "]" + LogStyles::LogAttributes::LOG_RESET_BOLD + " : ";
+                //Header = "----- ASYNC TASK [" + std::to_string(id) + "] : ";
                 break;
             case LogType::NON_ASYNC_TASK:
                 LOG_COLOR = LogStyles::LogColors::LOG_MAGENTA;
-                Header = "---- NON_ASYNC_TASK  : ";
+                Header = "----- NON_ASYNC_TASK " + LogStyles::LogColorAttributes::LOG_MAGENTA_BOLD + "[" + LogStyles::LogAttributes::LOG_RESET_BOLD + std::to_string(id) + 
+                LogStyles::LogColorAttributes::LOG_MAGENTA_BOLD + "]" + LogStyles::LogAttributes::LOG_RESET_BOLD + " : ";
                 break;
             case LogType::RESULT_VALID:
                 LOG_COLOR = LogStyles::LogColors::LOG_GREEN;
-                Header = "----- RESULT [VALID] : ";
+                Header = "----- RESULT " + LogStyles::LogColorAttributes::LOG_GREEN_BOLD + "[" + LogStyles::LogAttributes::LOG_RESET_BOLD + "VALID" + 
+                LogStyles::LogColorAttributes::LOG_GREEN_BOLD + "]" + LogStyles::LogAttributes::LOG_RESET_BOLD + " : ";
                 break;
             case LogType::RESULT_ERROR:
-                LOG_COLOR = LogStyles::LogColors::LOG_RED;
-                Header = "----- RESULT [ERROR] : ";
+                Header = "----- RESULT " + LogStyles::LogColorAttributes::LOG_RED_BOLD + "[" + LogStyles::LogAttributes::LOG_RESET_BOLD + "ERROR" + 
+                LogStyles::LogColorAttributes::LOG_RED_BOLD + "]" + LogStyles::LogAttributes::LOG_RESET_BOLD + " : ";
                 break;
             default:
                 LOG_COLOR = LogStyles::LogColors::LOG_RED;
                 Header = "UNKNOWN              : ";
                 break;
         }
-        return LOG_COLOR + Header + LogStyles::LogColors::LOG_COLOR_RESET;
+        return LOG_COLOR + Header + LogStyles::LOG_STYLE_RESET;
     }
     inline void Log(FILE* stream, LogType type, size_t id, const char* format, ...) {
         
