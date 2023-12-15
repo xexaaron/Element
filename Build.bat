@@ -43,16 +43,18 @@ if "%~1" == "-r" (
     set "loggingFlag=true"
     if "%~2" == "file" (
         set "fileLoggingFlag=true"
+        
         shift
     ) else if "%~2" == "console" (
         set "consoleLoggingFlag=true"
+        
         shift
     ) else if "%~2" == "both" (
         set "consoleLoggingFlag=true"
         set "fileLoggingFlag=true"
         shift
     ) else (
-                echo.
+        echo.
         echo Invalid Usage. Ensure a value is passed to flag -l ^<file^|console^|both^>.
         echo.
         echo Usage  ./Build.bat [-d ^| -r] [-v] [-l ^<file^|console^|both^>]

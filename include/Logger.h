@@ -5,6 +5,8 @@
 #include "../config.h"
 #include "Structs.h"
 #include <sstream>
+#include <fstream>
+#include <regex>
 namespace Logger {
     namespace LogStyles {
         static const std::string LOG_STYLE_RESET = "\033[0m";
@@ -168,13 +170,43 @@ namespace Logger {
         }
         return LOG_COLOR + Header + LogStyles::LOG_STYLE_RESET;
     }
+#ifdef FILE_LOGGING
+    #include <ctime>
+    static std::ofstream fileStream;
+    constexpr char DATE[80] = "-%Y-%m-%d";
+   
+#endif // FILE_LOGGING
     inline void Log(FILE* stream, LogType type, size_t id, const char* format, ...) {
         std::string Header = ComputeHeader(type, id);
         va_list args;
         va_start(args, format);
+    #ifdef CONSOLE_LOGGING
+        fprintf(stream, "\n");
         fprintf(stream, "%s", Header.c_str());
         vfprintf(stream, format, args);
         fprintf(stream, "\n");
+    #endif // CONSOLE_LOGGING
+    #ifdef FILE_LOGGING
+        
+        if (!fileStream.is_open()) {
+        char dateBuffer[80];
+        std::time_t currentTime = std::time(nullptr);
+        std::tm* localTime = std::localtime(&currentTime);
+        std::strftime(dateBuffer, sizeof(dateBuffer), DATE, localTime);
+        std::string filepath = std::string(LOG_DIRECTORY) + std::string(PROJECT_NAME) + "-" + std::string(TARGET_PLATFORM) + "-log.txt" + (dateBuffer);     
+        fileStream.open(filepath, std::ios::out | std::ios::trunc); // Open log.txt in append mode
+        if (!fileStream.is_open()) {
+            // Handle file open failure
+            return;
+        }
+    }
+    fileStream << "\n" << Header;
+    fileStream << format; // Write the log message
+    fileStream << "\n";
+        
+    #endif // FILE_LOGGING
+
+        
         va_end(args);
     }
     template<typename T>

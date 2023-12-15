@@ -73,7 +73,8 @@
         "future": "cpp",
         "condition_variable": "cpp",
         "coroutine": "cpp",
-        "resumable": "cpp"
+        "resumable": "cpp",
+        "regex": "cpp"
     },
     "files.exclude": {
         "**/html/**": true,

@@ -1,5 +1,8 @@
 #pragma once
 
+#define PROJECT_NAME "Element"
+
+#define LOG_DIRECTORY "D:/GithubRepositories/Element/build/Logs/"
 #define SRC_DIRECTORY "D:/GithubRepositories/Element/src/"
 #define INCLUDE_DIRECTORY "D:/GithubRepositories/Element/include/"
 #define WINDOW_DLL "D:/GithubRepositories/Element/Modules/Windows/Release/Window.dll"
