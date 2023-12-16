@@ -16,7 +16,6 @@ void LogProgramBegin() {
     Logger::Log(stdout, LogType::LOG, 0, "%s", flush.c_str());
     Logger::Log(stdout, LogType::LOG, 0, exec.c_str());
 }
-
 void TestAsyncTasks() {
     auto TestTask = [](){
         Logger::Log(stdout, LogType::ASYNC_TASK, ThreadManager::GetInstance().GetTaskCount(MAIN_PROCESS), "I am test task 1");
@@ -57,7 +56,6 @@ int main() {
         AppWindow->SetPosition(Vector2D<int>(950, 500));
         AppWindow->SetTitle("Window");
     }
-    TestAsyncTasks();
     ThreadManager::GetInstance().ExecuteTasks(WINDOW_PROCESS);
     ThreadManager::GetInstance().ExecuteTasks(RENDER_PROCESS);
     ThreadManager::GetInstance().ExecuteTasks(MAIN_PROCESS);

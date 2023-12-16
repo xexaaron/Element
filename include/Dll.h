@@ -77,7 +77,7 @@ inline RetType WIN32_CALL_MODULE_FUNCTION(const char* MODULE, const char* FUNCTI
     }
 }
 template<typename RetType>
-inline RetType WIN32_CALL_MODULE_FUNCTION_ASYNC(const char* MODULE, const char* FUNCTION_NAME,  size_t Process) {
+inline void WIN32_CALL_MODULE_FUNCTION_ASYNC(const char* MODULE, const char* FUNCTION_NAME,  size_t Process) {
     HMODULE moduleHandle = LoadedModules[MODULE];
     using FunctionType = RetType(*)();
     FunctionType function = reinterpret_cast<FunctionType>(GetProcAddress(moduleHandle, FUNCTION_NAME));
@@ -93,11 +93,8 @@ inline RetType WIN32_CALL_MODULE_FUNCTION_ASYNC(const char* MODULE, const char* 
         auto lambda = [](){};
     #endif // LOGGING
         ThreadManager::GetInstance().AddTask(function, Process, lambda);
-        return RetType{};
     } else {
         Logger::Log(stderr, LogType::LOG_ERROR, 0, "Failed to find function %s in module %s : %s", MODULE, FUNCTION_NAME, GetLastError());
-        // Return a default value for RetType in case of failure
-        return RetType();
     }
 }
 template<typename RetType, typename... Args>
@@ -117,7 +114,7 @@ inline RetType WIN32_CALL_MODULE_FUNCTION_ARGS(const char* MODULE, const char* F
     }
 }
 template<typename RetType, typename... Args>
-inline RetType WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC(const char* MODULE, const char* FUNCTION_NAME, size_t Process, Args... args) {
+inline void WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC(const char* MODULE, const char* FUNCTION_NAME, size_t Process, Args... args) {
     HMODULE moduleHandle = LoadedModules[MODULE];
     using FunctionType = RetType(*)(Args...);
     FunctionType function = reinterpret_cast<FunctionType>(GetProcAddress(moduleHandle, FUNCTION_NAME));
@@ -131,11 +128,8 @@ inline RetType WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC(const char* MODULE, const c
         auto lambda = [](){};
     #endif // LOGGING
         ThreadManager::GetInstance().AddTask(function, Process, lambda,  args...);
-        return RetType(0);
     } else {
         Logger::Log(stderr, LogType::LOG_ERROR, 0, "Failed to find function %s in module %s : %s", MODULE, FUNCTION_NAME, GetLastError());
-        // Return a default value for RetType in case of failure
-        return RetType(0);
     }
 }
 #else // Unix

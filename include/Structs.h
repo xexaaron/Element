@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Enums.h"
 #include "Vector.h"
 #include <iostream>
@@ -9,7 +8,25 @@
 #include <cstdint>
 #include <cstdio>
 #include <string>
+#include <string>
 #include <type_traits>
+
+#ifdef _WIN32
+    #include <Windows.h>
+    inline std::wstring StringToWide(const std::string& str) {
+        int len = MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, NULL, 0);
+        wchar_t* wstr = new wchar_t[len];
+        MultiByteToWideChar(CP_UTF8, 0, str.c_str(), -1, wstr, len);
+        std::wstring wideStr(wstr);
+        delete[] wstr;
+        return wideStr;
+    }
+#else
+    inline std::wstring StringToWide(const std::string& str) {
+        std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+        return converter.from_bytes(data);
+    }
+#endif // _WIN32
 
 template<typename T>
 concept StringType = std::is_convertible_v<T, std::string>;
@@ -30,9 +47,8 @@ public:
         return data.c_str();
     }
 
-    operator std::wstring() const {
-        std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
-        return converter.from_bytes(data);
+    operator std::wstring() const {    
+        return StringToWide(data);
     }
 
     // Comparison operators

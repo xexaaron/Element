@@ -1,8 +1,6 @@
-// WindowDLL.h
 #pragma once
 #include "windows.h"
 #include "Enums.h"
-#include "Logger.h"
 #include <iostream>
 #include <tuple>
 #include <iostream>

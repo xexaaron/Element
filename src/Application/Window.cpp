@@ -22,30 +22,30 @@ const char* Window::AppendPlatform(std::string stringToAppend) {
 }
 
 void Window::SendTestMessageToWindow(std::string Message) {
-    int8_t result = CallModuleFuncWithArgsAsync<int8_t, std::string>(WINDOW_DLL, AppendPlatform("TestMessage"), RENDER_PROCESS, Message);
+    CallModuleFuncWithArgsAsync<int8_t, std::string>(WINDOW_DLL, AppendPlatform("TestMessage"), RENDER_PROCESS, Message);
 }
 
 void Window::SetBackgroundColor(Vector3D<uint32_t> color) {
-    int8_t result = CallModuleFuncWithArgsAsync<int8_t, uint32_t, uint32_t, uint32_t>(WINDOW_DLL, AppendPlatform("SetWindowColor"), RENDER_PROCESS, color.x, color.y, color.z);
+    CallModuleFuncWithArgsAsync<int8_t, uint32_t, uint32_t, uint32_t>(WINDOW_DLL, AppendPlatform("SetWindowColor"), RENDER_PROCESS, color.x, color.y, color.z);
     Data.BackgroundColor = color;
 }
 
 
 void Window::SetTitle(const char* title) {
-    int8_t result = CallModuleFuncWithArgsAsync<int8_t, const char*>(WINDOW_DLL, AppendPlatform("SetWindowTitle"), RENDER_PROCESS, title);
+    CallModuleFuncWithArgsAsync<int8_t, const char*>(WINDOW_DLL, AppendPlatform("SetWindowTitle"), RENDER_PROCESS, title);
     Data.Title = title;
 }
 void Window::SetState(EWindowState state) {
-    int8_t result = CallModuleFuncWithArgsAsync<int8_t, EWindowState>(WINDOW_DLL, AppendPlatform("SetWindowState"), RENDER_PROCESS, state);
+    CallModuleFuncWithArgsAsync<int8_t, EWindowState>(WINDOW_DLL, AppendPlatform("SetWindowState"), RENDER_PROCESS, state);
     Data.State = state;
 } 
 
 void Window::SetPosition(Vector2D<int> position) {
-    int8_t result = CallModuleFuncWithArgsAsync<int8_t, int, int>(WINDOW_DLL, AppendPlatform("SetWindowPosition"), RENDER_PROCESS, position.x, position.y);
+    CallModuleFuncWithArgsAsync<int8_t, int, int>(WINDOW_DLL, AppendPlatform("SetWindowPosition"), RENDER_PROCESS, position.x, position.y);
     Data.Position = position;
 }
 void Window::SetSize(Vector2D<int> size) {
-    int8_t result = CallModuleFuncWithArgsAsync<int8_t, int, int>(WINDOW_DLL, AppendPlatform("SetWindowSize"), RENDER_PROCESS, size.x, size.y);
+    CallModuleFuncWithArgsAsync<int8_t, int, int>(WINDOW_DLL, AppendPlatform("SetWindowSize"), RENDER_PROCESS, size.x, size.y);
     Data.Size = size;
 }
 void Window::SetData(SWindowData data) {

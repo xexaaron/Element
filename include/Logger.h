@@ -181,32 +181,28 @@ namespace Logger {
         va_list args;
         va_start(args, format);
     #ifdef CONSOLE_LOGGING
-        fprintf(stream, "\n");
         fprintf(stream, "%s", Header.c_str());
         vfprintf(stream, format, args);
         fprintf(stream, "\n");
     #endif // CONSOLE_LOGGING
     #ifdef FILE_LOGGING
-        
         if (!fileStream.is_open()) {
-        char dateBuffer[80];
-        std::time_t currentTime = std::time(nullptr);
-        std::tm* localTime = std::localtime(&currentTime);
-        std::strftime(dateBuffer, sizeof(dateBuffer), DATE, localTime);
-        std::string filepath = std::string(LOG_DIRECTORY) + std::string(PROJECT_NAME) + "-" + std::string(TARGET_PLATFORM) + "-log.txt" + (dateBuffer);     
-        fileStream.open(filepath, std::ios::out | std::ios::trunc); // Open log.txt in append mode
-        if (!fileStream.is_open()) {
-            // Handle file open failure
-            return;
+            char dateBuffer[80];
+            std::time_t currentTime = std::time(nullptr);
+            std::tm* localTime = std::localtime(&currentTime);
+            std::strftime(dateBuffer, sizeof(dateBuffer), DATE, localTime);
+            std::string filepath = std::string(LOG_DIRECTORY) + std::string(PROJECT_NAME) + "-" + std::string(TARGET_PLATFORM) + "-log.txt" + (dateBuffer);     
+            fileStream.open(filepath, std::ios::out | std::ios::trunc); 
+            if (!fileStream.is_open()) {
+                #undef FILE_LOGGING
+                Logger::Log(stderr, LogType::LOG_ERROR, LOG_PROCESS, "Could not perform write operation on %s", filepath);
+                return;
+            }
         }
-    }
-    fileStream << "\n" << Header;
-    fileStream << format; // Write the log message
-    fileStream << "\n";
-        
-    #endif // FILE_LOGGING
-
-        
+        fileStream << "\n" << Header;
+        fileStream << format; // Write the log message
+        fileStream << "\n";
+        #endif // FILE_LOGGING
         va_end(args);
     }
     template<typename T>
@@ -299,30 +295,37 @@ namespace Logger {
         ((result += LogArgumentType(args) + ", "), ...); 
         return result;
     }
+    inline std::string ColorProcessName(const char* ProcessName) {
+        return Logger::LogStyles::LogColors::LOG_CYAN + std::string(ProcessName) + Logger::LogStyles::LOG_STYLE_RESET;
+    }
     inline std::string ProcessToName(size_t process) {
         std::string processIDName;
-            switch(process) {
+        switch(process) {
             case 0:
-                processIDName = Logger::LogStyles::LogColors::LOG_CYAN + "WINDOW_PROCESS" + Logger::LogStyles::LOG_STYLE_RESET;
+                processIDName = ColorProcessName("WINDOW_PROCESS");
                 break;
             case 1:
-                processIDName = Logger::LogStyles::LogColors::LOG_CYAN +  "APP_PROCESS" + Logger::LogStyles::LOG_STYLE_RESET;
+                processIDName = ColorProcessName("APP_PROCESS");
                 break;
             case 2:
-                processIDName = Logger::LogStyles::LogColors::LOG_CYAN + "RENDER_PROCESS" + Logger::LogStyles::LOG_STYLE_RESET;
+                processIDName = ColorProcessName("RENDER_PROCESS");
                 break;
             case 3:
-                processIDName = Logger::LogStyles::LogColors::LOG_CYAN + "EVENT_PROCESS" + Logger::LogStyles::LOG_STYLE_RESET;
+                processIDName = ColorProcessName("EVENT_PROCESS");
+                break;
+            case 65534:
+                processIDName = ColorProcessName("LOG_PROCESS");
                 break;
             case 65535:
-                processIDName = Logger::LogStyles::LogColors::LOG_CYAN + "MAIN_PROCESS" + Logger::LogStyles::LOG_STYLE_RESET;
+                processIDName = ColorProcessName("MAIN_PROCESS");
                 break;
             default:
+                processIDName = ColorProcessName("UNKOWN_PROCESS");
                 break;
         }
         return processIDName;
     }
-   
+
     template<typename... Args>
     inline void MassLogArguments(const char* moduleName, const char* functionName, Args... args) {
         // Log the function call

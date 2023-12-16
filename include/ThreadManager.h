@@ -36,24 +36,6 @@ public:
         };
         AddProcess(Process, taskFunc, lambda);
     }
-    template<typename Function, typename... Args>
-    inline void AddTaskNoLog(Function&& func, size_t Process, Args&&... args) {
-        auto taskFunc = [func, args...]() {
-            func(args...);
-        };
-        AddProcessNoLog(Process, taskFunc);
-        IncrementTaskCount(Process);
-    }
-    template<typename Function>
-    inline void AddTaskNoLog(Function&& func, size_t Process) {
-        auto taskFunc = [func]() {
-            func();
-        };
-        AddProcessNoLog(Process, taskFunc);
-    }
-
-    
-
     inline void ExecuteTasks(size_t Process) {
         int i = 0;
     #ifdef LOGGING
