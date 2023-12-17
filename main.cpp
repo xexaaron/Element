@@ -13,29 +13,29 @@ void LogProgramBegin() {
     }
     std::string flush = Logger::LogStyles::LogColorAttributes::LOG_WHITE_BOLD + "Flushed Console" + Logger::LogStyles::LOG_STYLE_RESET;
     std::string exec = Logger::LogStyles::LogColorAttributes::LOG_WHITE_BOLD + "Program Execute" + Logger::LogStyles::LOG_STYLE_RESET;
-    Logger::Log(stdout, LogType::LOG, 0, "%s", flush.c_str());
-    Logger::Log(stdout, LogType::LOG, 0, exec.c_str());
+    Logger::Log(stdout, ELogType::LOG, 0, "%s", flush.c_str());
+    Logger::Log(stdout, ELogType::LOG, 0, exec.c_str());
 }
 void TestAsyncTasks() {
     auto TestTask = [](){
-        Logger::Log(stdout, LogType::ASYNC_TASK, ThreadManager::GetInstance().GetTaskCount(MAIN_PROCESS), "I am test task 1");
+        Logger::Log(stdout, ELogType::ASYNC_TASK, ThreadManager::GetInstance().GetTaskCount(MAIN_PROCESS), "I am test task 1");
     };
     auto TestTaskLog = []() {
-         Logger::Log(stdout, LogType::ASYNC_TASK, ThreadManager::GetInstance().GetTaskCount(MAIN_PROCESS), "I am test task log 1");
+         Logger::Log(stdout, ELogType::ASYNC_TASK, ThreadManager::GetInstance().GetTaskCount(MAIN_PROCESS), "I am test task log 1");
     };
     ThreadManager::GetInstance().AddTask(TestTask, MAIN_PROCESS, TestTaskLog);
     auto TestTask2 = [](){
-        Logger::Log(stdout, LogType::ASYNC_TASK, ThreadManager::GetInstance().GetTaskCount(MAIN_PROCESS), "I am test task 2");
+        Logger::Log(stdout, ELogType::ASYNC_TASK, ThreadManager::GetInstance().GetTaskCount(MAIN_PROCESS), "I am test task 2");
     };
     auto TestTaskLog2 = [](){
-        Logger::Log(stdout, LogType::ASYNC_TASK, ThreadManager::GetInstance().GetTaskCount(MAIN_PROCESS), "I am test task log 2");
+        Logger::Log(stdout, ELogType::ASYNC_TASK, ThreadManager::GetInstance().GetTaskCount(MAIN_PROCESS), "I am test task log 2");
     };
     ThreadManager::GetInstance().AddTask(TestTask2, MAIN_PROCESS, TestTaskLog2);
     auto TestTask3 = [](){
-        Logger::Log(stdout, LogType::ASYNC_TASK, ThreadManager::GetInstance().GetTaskCount(MAIN_PROCESS), "I am test task 3");
+        Logger::Log(stdout, ELogType::ASYNC_TASK, ThreadManager::GetInstance().GetTaskCount(MAIN_PROCESS), "I am test task 3");
     };
     auto TestTaskLog3 = [](){
-        Logger::Log(stdout, LogType::ASYNC_TASK, ThreadManager::GetInstance().GetTaskCount(MAIN_PROCESS), "I am test task log 3");
+        Logger::Log(stdout, ELogType::ASYNC_TASK, ThreadManager::GetInstance().GetTaskCount(MAIN_PROCESS), "I am test task log 3");
     };
     ThreadManager::GetInstance().AddTask(TestTask3, MAIN_PROCESS, TestTaskLog3);
 }
@@ -51,21 +51,20 @@ int main() {
     Data.State = EWindowState::FULLSCREEN;
     Window* AppWindow = new Window(Data);
     if (AppWindow) {
-        AppWindow->SetSize(Vector2D<int>(500, 500));
+        AppWindow->SetSize(Vector2D<int>(800, 600));
         AppWindow->SetBackgroundColor(Vector3D<uint32_t>());
-        AppWindow->SetPosition(Vector2D<int>(950, 500));
+        AppWindow->SetPosition(Vector2D<int>());
         AppWindow->SetTitle("Window");
-        AppWindow->SetState(EWindowState::FULLSCREEN);
+        printf("Device Dimensions : (%u,%u)\n", AppWindow->GetDeviceSize().x, AppWindow->GetDeviceSize().y);
     }
     ThreadManager::GetInstance().ExecuteTasks(WINDOW_PROCESS);
     ThreadManager::GetInstance().ExecuteTasks(APP_PROCESS);
     ThreadManager::GetInstance().ExecuteTasks(RENDER_PROCESS);
     ThreadManager::GetInstance().ExecuteTasks(EVENT_PROCESS);
     ThreadManager::GetInstance().ExecuteTasks(MAIN_PROCESS);
-    // Any Process with a loop should be waited.
+    Logger::ForceDumpAsyncBuffer();
     ThreadManager::GetInstance().WaitProcess(WINDOW_PROCESS);
-    ThreadManager::GetInstance().WaitProcess(RENDER_PROCESS);
-    ThreadManager::GetInstance().WaitProcess(EVENT_PROCESS);
+    
     return 0;
 }
 

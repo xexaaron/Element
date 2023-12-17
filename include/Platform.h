@@ -4,7 +4,28 @@
 #include "../config.h"
 #include "DLL.h"
 
-#include <string>
+
+inline const char* AppendPlatform(std::string stringToAppend) {
+    std::string temp;
+    if (std::string(TARGET_PLATFORM) == "Windows") {
+        temp = "WIN32_";
+    } else if (std::string(TARGET_PLATFORM) == "Linux") {
+        temp = "UNIX_";
+    }
+    temp += stringToAppend; 
+    char* value = new char[temp.length() + 1]; 
+    std::strcpy(value, temp.c_str()); 
+    return value;
+}
+
+typedef uint32_t SYSAGN_WORD;
+inline Vector2D<uint16_t> UnpackSystemAgnosticNumericWord(SYSAGN_WORD word) {
+    Vector2D<uint16_t> result;
+    result.x = static_cast<uint16_t>((word >> 16) & 0xFFFF); // Extract param x from the high 16 bits
+    result.y = static_cast<uint16_t>(word & 0xFFFF);        // Extract param y from the low 16 bits
+    return result;
+}
+
 
 #ifdef _WIN32  
 #include <windows.h>
@@ -15,7 +36,7 @@
 #define FindModule(module) WIN32_FIND_MODULE(module)
 template<typename RetType>
 inline RetType CallModuleFunc(const char* MODULE, const char* FUNCTION_NAME) {
-   WIN32_CALL_MODULE_FUNCTION<RetType>(MODULE, FUNCTION_NAME);
+   return WIN32_CALL_MODULE_FUNCTION<RetType>(MODULE, FUNCTION_NAME);
 }
 template<typename RetType>
 inline void CallModuleFuncAsync(const char* MODULE, const char* FUNCTION_NAME, size_t PROCESS) {
@@ -23,7 +44,7 @@ inline void CallModuleFuncAsync(const char* MODULE, const char* FUNCTION_NAME, s
 }
 template<typename RetType, typename... Args>
 inline RetType CallModuleFuncWithArgs(const char* MODULE, const char* FUNCTION_NAME, Args... ARGS) {
-    WIN32_CALL_MODULE_FUNCTION_ARGS<RetType, Args...>(MODULE, FUNCTION_NAME, ARGS...);
+   return WIN32_CALL_MODULE_FUNCTION_ARGS<RetType, Args...>(MODULE, FUNCTION_NAME, ARGS...);
 }
 template<typename RetType, typename... Args>
 inline void CallModuleFuncWithArgsAsync(const char* MODULE, const char* FUNCTION_NAME,  size_t PROCESS, Args... ARGS) {
@@ -44,7 +65,7 @@ inline void CallModuleFuncWithArgsAsync(const char* MODULE, const char* FUNCTION
 #define CallModuleFunc(module, function) UNIX_CALL_MODULE_FUNCTION(module, function)
 template<typename RetType>
 inline RetType CallModuleFunc(const char* MODULE, const char* FUNCTION_NAME) {
-    UNIX_CALL_MODULE_FUNCTION<RetType>(MODULE, FUNCTION_NAME);
+    return UNIX_CALL_MODULE_FUNCTION<RetType>(MODULE, FUNCTION_NAME);
 }
 template<typename RetType>
 inline RetType CallModuleFuncAsync(const char* MODULE, const char* FUNCTION_NAME) {
@@ -52,7 +73,7 @@ inline RetType CallModuleFuncAsync(const char* MODULE, const char* FUNCTION_NAME
 }
 template<typename RetType, typename... Args>
 inline RetType CallModuleFuncWithArgs(const char* MODULE, const char* FUNCTION_NAME, Args... ARGS) {
-    UNIX_CALL_MODULE_FUNCTION_ARGS<RetType, Args...>(MODULE, FUNCTION_NAME, ARGS...);
+    return UNIX_CALL_MODULE_FUNCTION_ARGS<RetType, Args...>(MODULE, FUNCTION_NAME, ARGS...);
 }
 template<typename RetType, typename... Args>
 inline RetType CallModuleFuncWithArgsAsync(const char* MODULE, const char* FUNCTION_NAME, Args... ARGS) {

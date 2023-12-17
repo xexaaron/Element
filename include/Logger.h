@@ -14,6 +14,8 @@
     constexpr char DATE[80] = "-%Y-%m-%d";
 #endif // FILE_LOGGING
 
+
+
 namespace Logger {
     namespace LogStyles {
         static const std::string LOG_STYLE_RESET = "\033[0m";
@@ -123,6 +125,13 @@ namespace Logger {
         }
    
     }
+    
+    static constexpr int ASYC_RESULT_BUFFER_SIZE = 6;
+    static std::string AsyncResultBuffer[ASYC_RESULT_BUFFER_SIZE];
+    static int bufferIndex = 0;
+
+   
+    
     inline std::string ColorText(const char* Text, const std::string Color) {
         return Color + std::string(Text) + Logger::LogStyles::LOG_STYLE_RESET;
     }
@@ -191,19 +200,19 @@ namespace Logger {
                 break;
         }
     }
-    inline LogType int8_tToLogType(int8_t result) {
+    inline ELogType int8_tToELogType(int8_t result) {
         switch (result) {
             case -1:
-                return LogType::RESULT_ERROR;
+                return ELogType::RESULT_ERROR;
                 break;
             case 0:
-                return LogType::RESULT_ERROR;
+                return ELogType::RESULT_ERROR;
                 break;
             case 1:
-                return LogType::RESULT_VALID;
+                return ELogType::RESULT_VALID;
                 break;
             default:
-                return LogType::RESULT_ERROR;
+                return ELogType::RESULT_ERROR;
                 break;
         }
     }
@@ -223,45 +232,45 @@ namespace Logger {
                 break;
         }
     }
-    inline std::string ComputeHeader(LogType type, size_t id) {
+    inline std::string ComputeHeader(ELogType type, size_t id) {
         std::string Header;
         std::string LOG_COLOR;
         const std::string LOG_RESET = LogStyles::LogAttributes::LOG_RESET_UNDERLINE;
         switch (type) {
-            case LogType::LOG:
+            case ELogType::LOG:
                 LOG_COLOR = LogStyles::LogColors::LOG_YELLOW;
                 Header = ULBoldColorText("LOG" ,LOG_COLOR, LOG_RESET) + ColonPrependWhitespace(18, false);
                 break;
-            case LogType::STATUS:
+            case ELogType::STATUS:
                 LOG_COLOR = LogStyles::LogColors::LOG_CYAN;
                 Header = ULBoldColorText("STATUS" ,LOG_COLOR, LOG_RESET) + ColonPrependWhitespace(15, false);
                 break;
-            case LogType::LOG_WARNING:
+            case ELogType::LOG_WARNING:
                 LOG_COLOR = LogStyles::LogColors::LOG_YELLOW;
                 Header = ULBoldColorText("LOG_WARNING" ,LOG_COLOR, LOG_RESET) + ColonPrependWhitespace(14, false);
                 break;
-            case LogType::LOG_ERROR:
+            case ELogType::LOG_ERROR:
                 LOG_COLOR = LogStyles::LogColors::LOG_RED;
                 Header = ULBoldColorText("LOG_WARNING" ,LOG_COLOR, LOG_RESET) + ColonPrependWhitespace(16, false);
                 break;
-            case LogType::SUBSTATUS:
+            case ELogType::SUBSTATUS:
                 LOG_COLOR = LogStyles::LogColorAttributes::LOG_BLUE_BOLD;
                 Header = "-- SUBSTATUS         : ";
                 break;
-            case LogType::ASYNC_TASK:
+            case ELogType::ASYNC_TASK:
                 LOG_COLOR = LogStyles::LogColors::LOG_MAGENTA;
                 Header = "----- ASYNC TASK " + ColorAndBracketText(std::to_string(id).c_str(), LOG_COLOR) + " : ";
                 //Header = "----- ASYNC TASK [" + std::to_string(id) + "] : ";
                 break;
-            case LogType::NON_ASYNC_TASK:
+            case ELogType::NON_ASYNC_TASK:
                 LOG_COLOR = LogStyles::LogColors::LOG_MAGENTA;
                 Header = "----- NON_ASYNC_TASK " + ColorAndBracketText(std::to_string(id).c_str(), LOG_COLOR) + " : ";
                 break;
-            case LogType::RESULT_VALID:
+            case ELogType::RESULT_VALID:
                 LOG_COLOR = LogStyles::LogColors::LOG_GREEN;
                 Header = "----- RESULT     " + ColorAndBracketText(std::to_string(id).c_str(), LOG_COLOR) + " : ";
                 break;
-            case LogType::RESULT_ERROR:
+            case ELogType::RESULT_ERROR:
                 Header = "----- RESULT     " + ColorAndBracketText(std::to_string(id).c_str(), LOG_COLOR) + " : ";
                 break;
             default:
@@ -278,14 +287,20 @@ namespace Logger {
         return TextColor + "Task " + Reset + ColorAndBracketText(std::to_string(taskID).c_str(), BracketsColor);
         
     }
-    inline void Log(FILE* stream, LogType type, size_t id, const char* format, ...) {
+    inline void Log(FILE* stream, ELogType type, size_t id, const char* format, ...) {
         std::string Header = ComputeHeader(type, id);
         va_list args;
         va_start(args, format);
     #ifdef CONSOLE_LOGGING
-        fprintf(stream, "%s", Header.c_str());
-        vfprintf(stream, format, args);
-        fprintf(stream, "\n");
+        if (type == ELogType::RESULT_VALID) {
+            char logMessage[256];
+            vsnprintf(logMessage, sizeof(logMessage), format, args);
+            AsyncResultBuffer[bufferIndex++] = Header + logMessage;
+        } else {
+            fprintf(stream, "%s", Header.c_str());
+            vfprintf(stream, format, args);
+            fprintf(stream, "\n");
+        }
     #endif // CONSOLE_LOGGING
     #ifdef FILE_LOGGING
         if (!fileStream.is_open()) {
@@ -297,7 +312,7 @@ namespace Logger {
             fileStream.open(filepath, std::ios::out | std::ios::trunc); 
             if (!fileStream.is_open()) {
                 #undef FILE_LOGGING
-                Logger::Log(stderr, LogType::LOG_ERROR, LOG_PROCESS, "Could not perform write operation on %s", filepath);
+                Logger::Log(stderr, ELogType::LOG_ERROR, LOG_PROCESS, "Could not perform write operation on %s", filepath);
                 return;
             }
         }
@@ -358,6 +373,16 @@ namespace Logger {
                 return Logger::LogStyles::LogColors::LOG_BLUE + std::string(typeid(T).name()) + Logger::LogStyles::LOG_STYLE_RESET;
             }
         #endif // VERBOSE
+    }
+    template<>
+    inline std::string LogArgumentType<EWindowState>(const EWindowState&) {
+       const std::string Color = Logger::LogStyles::LogColors::LOG_GREEN;
+        return ColorText("enum ", Logger::LogStyles::LogColors::LOG_BLUE) + ColorText("EWindowState", Color);
+    }
+    template<>
+    inline std::string LogArgumentType<ELogType>(const ELogType&) {
+       const std::string Color = Logger::LogStyles::LogColors::LOG_GREEN;
+        return ColorText("enum ", Logger::LogStyles::LogColors::LOG_BLUE) + ColorText("EWindowState", Color);
     }
     template<>
     inline std::string LogArgumentType<uint8_t>(const uint8_t&) {
@@ -428,7 +453,7 @@ namespace Logger {
         } else if(platform == "Darwin") {
             return std::string("DARWIN_");
         } else {
-            Logger::Log(stderr, LogType::LOG_ERROR, LOG_PROCESS, "We do not support your platform. How you made it this far im not sure.");
+            Logger::Log(stderr, ELogType::LOG_ERROR, LOG_PROCESS, "We do not support your platform. How you made it this far im not sure.");
             std::exit(-1);
         }
     }
@@ -471,7 +496,7 @@ namespace Logger {
         Logger::LogStyles::LOG_STYLE_RESET << Logger::LogStyles::LogColors::LOG_GREY << args <<
         Logger::LogStyles::LOG_STYLE_RESET << (i != argCount - 1 ? ", " : ""), ++i), ...);
         logStream << Logger::LogStyles::LogColors::LOG_MAGENTA << ")";
-        Logger::Log(stdout, LogType::ASYNC_TASK, TaskID, logStream.str().c_str());
+        Logger::Log(stdout, ELogType::ASYNC_TASK, TaskID, logStream.str().c_str());
     }
     inline void MassLogAsync(const char* moduleName, size_t TaskID, size_t process, const char* functionName) {
         std::ostringstream logStream;
@@ -503,7 +528,33 @@ namespace Logger {
         }
     #endif // VERBOSE
         logStream << Logger::LogStyles::LogColors::LOG_MAGENTA << ")";
-        Logger::Log(stdout, LogType::ASYNC_TASK, TaskID, logStream.str().c_str());
+        Logger::Log(stdout, ELogType::ASYNC_TASK, TaskID, logStream.str().c_str());
+    }
+    inline void DumpAsyncBuffer() {
+        if (bufferIndex == ASYC_RESULT_BUFFER_SIZE) {
+            std::string LogMessage = Logger::BoldText("Dumping Async Buffer ", Logger::LogStyles::LogColors::LOG_WHITE) + 
+            Logger::ColorAndBracketText(std::to_string(bufferIndex).c_str(), Logger::LogStyles::LogColors::LOG_GREEN);
+            Logger::Log(stdout, ELogType::SUBSTATUS, LOG_PROCESS, "%s", LogMessage.c_str());
+            for (int i = 0; i < ASYC_RESULT_BUFFER_SIZE; ++i) {
+                if (!(AsyncResultBuffer[i].empty())) {
+                    std::cout << AsyncResultBuffer[i] << "\n";
+                    AsyncResultBuffer[i].clear();
+                }
+            }
+            bufferIndex = 0; 
+        }
+    }
+    inline void ForceDumpAsyncBuffer() {
+        std::string LogMessage = Logger::BoldText("Force Dumping Async Buffer ", Logger::LogStyles::LogColors::LOG_WHITE) + 
+        Logger::ColorAndBracketText(std::to_string(bufferIndex).c_str(), Logger::LogStyles::LogColors::LOG_GREEN);
+        Logger::Log(stdout, ELogType::SUBSTATUS, LOG_PROCESS, "%s", LogMessage.c_str());
+        for (int i = 0; i < ASYC_RESULT_BUFFER_SIZE; ++i) {
+            if (!(AsyncResultBuffer[i].empty())) {
+                std::cout << AsyncResultBuffer[i] << "\n";
+                AsyncResultBuffer[i].clear();
+            }
+        }
+        bufferIndex = 0; 
     }
 }
 

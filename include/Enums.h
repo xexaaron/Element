@@ -4,7 +4,7 @@ enum EWindowState {
     MAXIMIZED,
     MINIMIZED,
 };
-enum LogType {
+enum ELogType {
     LOG = 0,
     STATUS = 1,
     LOG_WARNING = 2,

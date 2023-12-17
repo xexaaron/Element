@@ -74,7 +74,8 @@
         "condition_variable": "cpp",
         "coroutine": "cpp",
         "resumable": "cpp",
-        "regex": "cpp"
+        "regex": "cpp",
+        "print": "cpp"
     },
     "files.exclude": {
         "**/html/**": true,

@@ -1,11 +1,6 @@
 #include "../../include/Window.h"
 
-Window::Window(SWindowData data)  : Data(data), TargetPlatform(TARGET_PLATFORM) {
-        if (TargetPlatform == "Windows") {
-            TargetPlatform = "WIN32_";
-        } else if (TargetPlatform == "Linux") {
-            TargetPlatform = "UNIX_";
-        }
+Window::Window(SWindowData data)  : Data(data) {
         LoadModule(WINDOW_DLL);
         CallModuleFuncAsync<int>(WINDOW_DLL, AppendPlatform("CreateAndRunWindow"), WINDOW_PROCESS);
 }
@@ -14,11 +9,9 @@ Window::~Window() {
     UnloadModule(WINDOW_DLL);
 }
 
-const char* Window::AppendPlatform(std::string stringToAppend) {
-    std::string temp = TargetPlatform + stringToAppend; 
-    char* value = new char[temp.length() + 1]; 
-    std::strcpy(value, temp.c_str()); 
-    return value;
+void Window::SetPixelColor(Vector2D<int> Coord, Vector3D<uint32_t> Color) {
+    CallModuleFuncWithArgsAsync<int8_t, int, int, uint32_t, uint32_t, uint32_t>(WINDOW_DLL, AppendPlatform("SetWindowPixel"), RENDER_PROCESS,
+    Coord.x, Coord.y, Color.x, Color.y, Color.z);
 }
 
 void Window::SendTestMessageToWindow(std::string Message) {
@@ -56,6 +49,11 @@ void Window::SetData(SWindowData data) {
     SetSize(data.Size);
     data = data;
 }
+
+Vector2D<uint16_t> Window::GetDeviceSize() {
+    SYSAGN_WORD Word = CallModuleFunc<SYSAGN_WORD>(WINDOW_DLL, AppendPlatform("GetDeviceDimensions"));
+    return UnpackSystemAgnosticNumericWord(Word);
+} 
 
 Vector2D<int> Window::GetPosition() {
     return Vector2D<int>(Data.Position.x, Data.Position.y);

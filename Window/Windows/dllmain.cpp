@@ -13,6 +13,17 @@ int WindowPosY = 0;
 int WindowSizeX = 800;
 int WindowSizeY = 600;
 
+struct Pixel {
+    int x;
+    int y;
+    COLORREF color;
+};
+struct PixelRegion {
+    std::vector<int> x;
+    std::vector<int> y;
+    COLORREF color;
+};
+
 
 
 #define WM_USER_MESSAGES_BASE (WM_USER + 100)
@@ -21,10 +32,9 @@ int WindowSizeY = 600;
 #define WM_SET_WINDOW_COLOR (WM_USER_MESSAGES_BASE + 3)
 #define WM_SET_WINDOW_STATE (WM_USER_MESSAGES_BASE + 4)
 #define WM_SET_WINDOW_TITLE (WM_USER_MESSAGES_BASE + 5)
-
+#define WM_SET_WINDOW_PIXEL (WM_USER_MESSAGES_BASE + 6)
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-
 WINDOWDLL_API int8_t WIN32_TestMessage(std::string msg) {
     if (!msg.empty()) {
         MessageBoxA(NULL, msg.c_str(), "Test Message", MB_OK);
@@ -35,7 +45,6 @@ WINDOWDLL_API int8_t WIN32_TestMessage(std::string msg) {
     }
     return 0;
 }
-
 WINDOWDLL_API int8_t WIN32_SetWindowTitle(const char* Title) {
     if (hWnd) {
         PostMessage(hWnd, WM_SET_WINDOW_TITLE, 0, (LPARAM)Title);
@@ -57,7 +66,6 @@ WINDOWDLL_API int8_t WIN32_SetWindowPosition(int x, int y) {
     }
     return 0;
 }
-
 WINDOWDLL_API int8_t WIN32_SetWindowSize(int x, int y) {
     if (hWnd) {
         LPARAM Size = MAKELPARAM(static_cast<WORD>(x), static_cast<WORD>(y));
@@ -68,7 +76,6 @@ WINDOWDLL_API int8_t WIN32_SetWindowSize(int x, int y) {
     }               
     return 0;
 }
-
 WINDOWDLL_API int8_t WIN32_SetWindowColor(uint32_t Red, uint32_t Green, uint32_t Blue) {
     if (hWnd) {
         COLORREF Color = RGB(Red, Green, Blue);
@@ -79,9 +86,6 @@ WINDOWDLL_API int8_t WIN32_SetWindowColor(uint32_t Red, uint32_t Green, uint32_t
     }
     return 0;
 }
-
-
-
 WINDOWDLL_API int8_t WIN32_SetWindowState(EWindowState state) {
     if (hWnd) {
         PostMessage(hWnd, WM_SET_WINDOW_STATE, 0, (LPARAM)state);
@@ -95,18 +99,57 @@ WINDOWDLL_API int8_t WIN32_SetWindowState(EWindowState state) {
 
 
 
+
+WINDOWDLL_API SYSAGN_WORD WIN32_GetDeviceDimensions() {
+    HDC dc = GetDC(hWnd);
+    if (dc) {
+        int screenWidth = GetSystemMetrics(SM_CXSCREEN);
+        int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+        ReleaseDC(hWnd, dc);
+        SYSAGN_WORD dimensionsWord = (static_cast<uint16_t>(screenWidth) << 16) | static_cast<uint16_t>(screenHeight);
+        return dimensionsWord;
+    } else {
+        return 0;
+    }
+}
+
+WINDOWDLL_API int8_t WIN32_SetWindowPixel(int x, int y, uint32_t Red, uint32_t Green, uint32_t Blue) {
+    if (hWnd) {
+        COLORREF Color = RGB(Red, Green, Blue);
+        Pixel* PackedParams = new Pixel;
+        if (PackedParams != nullptr) {
+            PackedParams->x = x;
+            PackedParams->y = y;
+            PackedParams->color = Color;
+
+            LPARAM lparam = reinterpret_cast<LPARAM>(PackedParams);
+            PostMessage(hWnd, WM_SET_WINDOW_PIXEL, 0, lparam);
+        
+        // Do not forget to release allocated memory when done
+        delete PackedParams;
+            return 1;
+        }
+        return -1;
+    } else {
+        return -1;
+    }
+    return 0; // Unreachable FUNCTION_RESULT_UNDEFINED
+}
+
+
 WINDOWDLL_API int WIN32_CreateAndRunWindow() {
-   
+    
     hInst = GetModuleHandle(NULL);
     WNDCLASSEXW wcex = { sizeof(WNDCLASSEXW) };
     wcex.style = CS_HREDRAW | CS_VREDRAW;
+    
     wcex.lpfnWndProc = WndProc;
     wcex.hInstance = hInst;
     wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszClassName = szWindowClass;
     RegisterClassExW(&wcex);
-    hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
+    hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW, WindowPosX, WindowPosY,
         WindowSizeX, WindowSizeY, NULL, NULL, hInst, NULL);
     if (!hWnd) {
         return NULL;
@@ -132,16 +175,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
     case WM_DESTROY:
         PostQuitMessage(0);
         std::exit(0);
+        break;
     case WM_SET_WINDOW_POSITION: {
-        int x = LOWORD(lParam);
-        int y = HIWORD(lParam);
-        SetWindowPos(hWnd, NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+        WindowPosX = LOWORD(lParam);
+        WindowPosY = HIWORD(lParam);
+        SetWindowPos(hWnd, NULL, WindowPosX, WindowPosY, WindowSizeX, WindowSizeY, SWP_NOSIZE | SWP_NOZORDER);
         break;
     }
     case WM_SET_WINDOW_SIZE: {
-        int width = LOWORD(lParam);
-        int height = HIWORD(lParam);
-        SetWindowPos(hWnd, NULL, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER);
+        WindowSizeX = LOWORD(lParam);
+        WindowSizeY = HIWORD(lParam);
+        SetWindowPos(hWnd, NULL, WindowPosX, WindowPosY, WindowSizeX, WindowSizeY, SWP_NOMOVE | SWP_NOZORDER);
         break;
     }
     case WM_ERASEBKGND: {
@@ -151,6 +195,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
         GetClientRect(hWnd, &rect);
         FillRect(hdc, &rect, hBrush);
         DeleteObject(hBrush);
+        break;
     }
     case WM_SET_WINDOW_TITLE: {
         const char* utf8Title = reinterpret_cast<const char*>(lParam);
@@ -193,6 +238,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) 
             break;
         }
         break;
+    }
+    case WM_SET_WINDOW_PIXEL: {
+        Pixel* Pix = reinterpret_cast<Pixel*>(lParam);
+        HDC hdc = (HDC)wParam;
+        SetPixel(hdc, Pix->x, Pix->y, Pix->color);
     }
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);

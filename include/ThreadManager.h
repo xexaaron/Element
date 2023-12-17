@@ -24,7 +24,7 @@ public:
                 if (Concepts::IsNumber(result)) {
                     result = static_cast<int8_t>(result);
                 }
-                Logger::Log(Logger::int8_tToStream(result), Logger::int8_tToLogType(result), Process, "%s -> %s -> %s",
+                Logger::Log(Logger::int8_tToStream(result), Logger::int8_tToELogType(result), CurrentTask, "%s -> %s -> %s",
                 Logger::ProcessToName(Process).c_str(), Logger::LogTask(CurrentTask).c_str(), Logger::int8_tToResultType(result).c_str());
             };
             AddTaskToProcess(Process, taskFunc, lambda);
@@ -46,7 +46,7 @@ public:
                 if (Concepts::IsNumber(result)) {
                     result = static_cast<int8_t>(result);
                 }
-                Logger::Log(Logger::int8_tToStream(result), Logger::int8_tToLogType(result), Process, "%s -> %s -> %s",
+                Logger::Log(Logger::int8_tToStream(result), Logger::int8_tToELogType(result), CurrentTask, "%s -> %s -> %s",
                 Logger::ProcessToName(Process).c_str(), Logger::LogTask(CurrentTask).c_str(), Logger::int8_tToResultType(result).c_str());
             };
             AddTaskToProcess(Process, taskFunc, lambda);
@@ -61,10 +61,9 @@ public:
     inline void ExecuteTasks(size_t Process) {
         int i = 0;
     #ifdef LOGGING
-        printf("\n");
         std::string processIDName;
         std::string processLogMessage = Logger::BoldText("Executing Process ", Logger::LogStyles::LogColors::LOG_WHITE) + Logger::ProcessToName(Process);
-        Logger::Log(stdout, LogType::STATUS, 0, "%s", processLogMessage.c_str());
+        Logger::Log(stdout, ELogType::STATUS, 0, "%s", processLogMessage.c_str());
     #endif // LOGGING
         auto& taskVec = taskInfos[Process];
         for (auto& taskInfo : taskVec) {
@@ -73,11 +72,11 @@ public:
     #ifdef LOGGING
             const std::string Color = Logger::LogStyles::LogColors::LOG_BLUE;
             std::string TaskLogMessage = Logger::BoldText("Executing Task   ", Logger::LogStyles::LogColors::LOG_WHITE) + Logger::ColorAndBracketText(std::to_string(i).c_str(), Color);
-            printf("\n");
-            Logger::Log(stdout, LogType::SUBSTATUS, 0, "%s", TaskLogMessage.c_str());
+            Logger::Log(stdout, ELogType::SUBSTATUS, 0, "%s", TaskLogMessage.c_str());
     #endif // LOGGING
             lambda(); // CALL LAMBDA
             processThreads[Process].emplace_back(taskFunc);
+            Logger::DumpAsyncBuffer();
             i++;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(50)); // Add Delay for Process variables to become initialized.
