@@ -24,7 +24,9 @@ inline static std::map<const char*, HINSTANCE> LoadedModules;
 inline void WIN32_LOAD_MODULE(const char* libPath) {
     HINSTANCE handle = LoadLibraryA(libPath);
     if (!handle) {
+    #ifdef LOGGING
         Logger::Log(stderr, LogType::LOG_ERROR, 0, "Failed to load DLL : %s", GetLastError());
+    #endif // LOGGING
         // Handle error condition
     } else {
         LoadedModules[libPath] = handle;
@@ -53,8 +55,9 @@ inline void WIN32_UNLOAD_MODULE(const char* MODULE) {
         FreeLibrary(moduleHandle);
         LoadedModules.erase(MODULE);
     } else {
+    #ifdef LOGGING
         Logger::Log(stderr, LogType::LOG_ERROR, 0, "Trouble unloading module : %s", MODULE);
-        
+    #endif // LOGGING
     }
 }
 template<typename RetType>
@@ -63,7 +66,6 @@ inline RetType WIN32_CALL_MODULE_FUNCTION(const char* MODULE, const char* FUNCTI
     using FunctionType = RetType(*)();
     FunctionType function = reinterpret_cast<FunctionType>(GetProcAddress(moduleHandle, FUNCTION_NAME));
 #ifdef LOGGING
-    
     size_t lastSlashPos = std::string(MODULE).find_last_of('/');
     std::string moduleNameSubstring = std::string(MODULE).substr(lastSlashPos + 1);
     Logger::Log(stdout, LogType::NON_ASYNC_TASK, 0, "WIN32_CALL_MODULE_FUNCTION(%s, %s)", moduleNameSubstring.c_str(), FUNCTION_NAME);
@@ -81,17 +83,17 @@ inline void WIN32_CALL_MODULE_FUNCTION_ASYNC(const char* MODULE, const char* FUN
     HMODULE moduleHandle = LoadedModules[MODULE];
     using FunctionType = RetType(*)();
     FunctionType function = reinterpret_cast<FunctionType>(GetProcAddress(moduleHandle, FUNCTION_NAME));
+#ifdef LOGGING
+    size_t TaskID = ThreadManager::GetInstance().GetTaskCount(Process);
+    auto lambda = [MODULE, TaskID, FUNCTION_NAME, Process]() {
+    size_t lastSlashPos = std::string(MODULE).find_last_of('/');
+    std::string moduleNameSubstring = std::string(MODULE).substr(lastSlashPos + 1);
+    Logger::MassLogAsync(MODULE, TaskID, Process, FUNCTION_NAME);
+};
+#else
+    auto lambda = [](){};
+#endif // LOGGING
     if (function != nullptr) {
-    #ifdef LOGGING
-        size_t TaskID = ThreadManager::GetInstance().GetTaskCount(Process);
-        auto lambda = [MODULE, TaskID, FUNCTION_NAME, Process]() {
-            size_t lastSlashPos = std::string(MODULE).find_last_of('/');
-            std::string moduleNameSubstring = std::string(MODULE).substr(lastSlashPos + 1);
-            Logger::MassLogAsync(MODULE, TaskID, Process, FUNCTION_NAME);
-        };
-    #else
-        auto lambda = [](){};
-    #endif // LOGGING
         ThreadManager::GetInstance().AddTask(function, Process, lambda);
     } else {
         Logger::Log(stderr, LogType::LOG_ERROR, 0, "Failed to find function %s in module %s : %s", MODULE, FUNCTION_NAME, GetLastError());
@@ -118,15 +120,16 @@ inline void WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC(const char* MODULE, const char
     HMODULE moduleHandle = LoadedModules[MODULE];
     using FunctionType = RetType(*)(Args...);
     FunctionType function = reinterpret_cast<FunctionType>(GetProcAddress(moduleHandle, FUNCTION_NAME));
+#ifdef LOGGING
+    size_t TaskID = ThreadManager::GetInstance().GetTaskCount(Process);
+    auto lambda = [MODULE, TaskID, Process, FUNCTION_NAME, args...](){
+        Logger::MassLogArgumentsAsync(MODULE, TaskID, Process, FUNCTION_NAME, args...);
+    };
+#else
+    auto lambda = [](){};
+#endif // LOGGING
     if (function != nullptr) {
-    #ifdef LOGGING
-        size_t TaskID = ThreadManager::GetInstance().GetTaskCount(Process);
-        auto lambda = [MODULE, TaskID, Process, FUNCTION_NAME, args...](){
-            Logger::MassLogArgumentsAsync(MODULE, TaskID, Process, FUNCTION_NAME, args...);
-        };
-    #else
-        auto lambda = [](){};
-    #endif // LOGGING
+    
         ThreadManager::GetInstance().AddTask(function, Process, lambda,  args...);
     } else {
         Logger::Log(stderr, LogType::LOG_ERROR, 0, "Failed to find function %s in module %s : %s", MODULE, FUNCTION_NAME, GetLastError());
@@ -198,9 +201,9 @@ inline void WIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC(const char* MODULE, const char
                 using FunctionType = RetType(*)(Args...);
                 // Cast the function pointer to the appropriate type
                 FunctionType func = reinterpret_cast<FunctionType>(function);
-            #ifdef LOGGING // Use #define VERBOSE to log verbose types
+            #ifdef LOGGING 
                     Logger::MassLogArguments(MODULE, FUNCTION_NAME, args...);
-            #endif // LOG_ARGS
+            #endif // LOGGING
                 return func(args...);
             } else {
                 Logger::Log(stderr, LogType::LOG_ERROR, 0, "Failed to find function %s in module %s : %s", MODULE, FUNCTION_NAME, GetLastError());

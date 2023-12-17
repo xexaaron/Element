@@ -41,7 +41,7 @@ Name Base::GetName() {
 
 Name Base::GetParentName() {
     if (m_ParentName == "") {
-        fprintf(stderr, "ERROR -> %s::GetParentName() : Object does not have a parent",GetName());
+        Logger::Log(stderr, LogType::RESULT_ERROR, APP_PROCESS, "ERROR -> %s::GetParentName() : Object does not have a parent", GetName());
         return "";
     }
     return m_ParentName;

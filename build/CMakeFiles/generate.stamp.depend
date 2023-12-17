@@ -19,8 +19,11 @@ C:/Program Files/CMake/share/cmake-3.27/Modules/Platform/Windows-MSVC.cmake
 C:/Program Files/CMake/share/cmake-3.27/Modules/Platform/Windows.cmake
 C:/Program Files/CMake/share/cmake-3.27/Modules/Platform/WindowsPaths.cmake
 D:/GithubRepositories/Element/CMakeLists.txt
+D:/GithubRepositories/Element/build/Build-Mode.cmake
 D:/GithubRepositories/Element/build/CMakeFiles/3.27.7/CMakeCCompiler.cmake
 D:/GithubRepositories/Element/build/CMakeFiles/3.27.7/CMakeCXXCompiler.cmake
 D:/GithubRepositories/Element/build/CMakeFiles/3.27.7/CMakeRCCompiler.cmake
 D:/GithubRepositories/Element/build/CMakeFiles/3.27.7/CMakeSystem.cmake
+D:/GithubRepositories/Element/build/Flags.cmake
+D:/GithubRepositories/Element/build/Platform.cmake
 D:/GithubRepositories/Element/build/config.h.in

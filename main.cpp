@@ -55,11 +55,17 @@ int main() {
         AppWindow->SetBackgroundColor(Vector3D<uint32_t>());
         AppWindow->SetPosition(Vector2D<int>(950, 500));
         AppWindow->SetTitle("Window");
+        AppWindow->SetState(EWindowState::FULLSCREEN);
     }
     ThreadManager::GetInstance().ExecuteTasks(WINDOW_PROCESS);
+    ThreadManager::GetInstance().ExecuteTasks(APP_PROCESS);
     ThreadManager::GetInstance().ExecuteTasks(RENDER_PROCESS);
+    ThreadManager::GetInstance().ExecuteTasks(EVENT_PROCESS);
     ThreadManager::GetInstance().ExecuteTasks(MAIN_PROCESS);
+    // Any Process with a loop should be waited.
     ThreadManager::GetInstance().WaitProcess(WINDOW_PROCESS);
+    ThreadManager::GetInstance().WaitProcess(RENDER_PROCESS);
+    ThreadManager::GetInstance().WaitProcess(EVENT_PROCESS);
     return 0;
 }
 

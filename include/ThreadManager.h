@@ -9,42 +9,61 @@
 #include <chrono>
 #include <thread>
 #include "Logger.h"
-
-
-
 class ThreadManager {
 public:
     inline static ThreadManager& GetInstance() {
         static ThreadManager instance; // Singleton pattern to ensure only one instance
         return instance;
     }
-
-    
     template<typename Function, typename Lambda, typename... Args>
     inline void AddTask(Function&& func, size_t Process, Lambda&& lambda, Args&&... args) {
-        auto taskFunc = [func, lambda, args...]() {
-            func(args...);
-        };
-        AddProcess(Process, taskFunc, lambda);
+        size_t CurrentTask = ThreadManager::GetInstance().GetTaskCount(Process);
+        if constexpr (!std::is_same_v<std::invoke_result_t<Function, Args...>, void>) {
+            auto taskFunc = [func, lambda, Process, CurrentTask, args...]() {
+                auto result = func(args...);
+                if (Concepts::IsNumber(result)) {
+                    result = static_cast<int8_t>(result);
+                }
+                Logger::Log(Logger::int8_tToStream(result), Logger::int8_tToLogType(result), Process, "%s -> %s -> %s",
+                Logger::ProcessToName(Process).c_str(), Logger::LogTask(CurrentTask).c_str(), Logger::int8_tToResultType(result).c_str());
+            };
+            AddTaskToProcess(Process, taskFunc, lambda);
+        } else {
+            auto taskFunc = [func, lambda, Process, args]() {
+                func();
+            };
+            AddTaskToProcess(Process, taskFunc, lambda);
+        }
         IncrementTaskCount(Process);
     }
 
     template<typename Function, typename Lambda>
     inline void AddTask(Function&& func, size_t Process, Lambda&& lambda) {
-        auto taskFunc = [func, lambda]() {
-            func();
-        };
-        AddProcess(Process, taskFunc, lambda);
+        size_t CurrentTask = ThreadManager::GetInstance().GetTaskCount(Process);
+        if constexpr (!std::is_same_v<std::invoke_result_t<Function>, void>) {
+            auto taskFunc = [func, lambda, Process, CurrentTask]() {
+                auto result = func();
+                if (Concepts::IsNumber(result)) {
+                    result = static_cast<int8_t>(result);
+                }
+                Logger::Log(Logger::int8_tToStream(result), Logger::int8_tToLogType(result), Process, "%s -> %s -> %s",
+                Logger::ProcessToName(Process).c_str(), Logger::LogTask(CurrentTask).c_str(), Logger::int8_tToResultType(result).c_str());
+            };
+            AddTaskToProcess(Process, taskFunc, lambda);
+        } else {
+            auto taskFunc = [func, lambda, Process]() {
+                func();
+            };
+            AddTaskToProcess(Process, taskFunc, lambda);
+        }
+        IncrementTaskCount(Process);
     }
     inline void ExecuteTasks(size_t Process) {
         int i = 0;
     #ifdef LOGGING
+        printf("\n");
         std::string processIDName;
-        processIDName = Logger::ProcessToName(Process);
-        std::string processLogMessage = Logger::LogStyles::LogColorAttributes::LOG_WHITE_BOLD + 
-        "Executing Process " + Logger::LogStyles::LOG_STYLE_RESET + Logger::LogStyles::LogColorAttributes::LOG_CYAN_BOLD + "[" + Logger::LogStyles::LOG_STYLE_RESET + 
-        processIDName + Logger::LogStyles::LogColorAttributes::LOG_CYAN_BOLD + "]" + 
-        Logger::LogStyles::LOG_STYLE_RESET;
+        std::string processLogMessage = Logger::BoldText("Executing Process ", Logger::LogStyles::LogColors::LOG_WHITE) + Logger::ProcessToName(Process);
         Logger::Log(stdout, LogType::STATUS, 0, "%s", processLogMessage.c_str());
     #endif // LOGGING
         auto& taskVec = taskInfos[Process];
@@ -52,10 +71,9 @@ public:
             auto& taskFunc = taskInfo.first;
             auto& lambda = taskInfo.second;
     #ifdef LOGGING
-            std::string TaskLogMessage = Logger::LogStyles::LogColorAttributes::LOG_WHITE_BOLD + 
-            "Executing Task    " + Logger::LogStyles::LOG_STYLE_RESET + Logger::LogStyles::LogColorAttributes::LOG_BLUE_BOLD + "[" + Logger::LogStyles::LOG_STYLE_RESET +
-            Logger::LogStyles::LogColors::LOG_BLUE + std::to_string(i) + Logger::LogStyles::LogColorAttributes::LOG_BLUE_BOLD + "]" + 
-            Logger::LogStyles::LOG_STYLE_RESET;
+            const std::string Color = Logger::LogStyles::LogColors::LOG_BLUE;
+            std::string TaskLogMessage = Logger::BoldText("Executing Task   ", Logger::LogStyles::LogColors::LOG_WHITE) + Logger::ColorAndBracketText(std::to_string(i).c_str(), Color);
+            printf("\n");
             Logger::Log(stdout, LogType::SUBSTATUS, 0, "%s", TaskLogMessage.c_str());
     #endif // LOGGING
             lambda(); // CALL LAMBDA
@@ -112,18 +130,12 @@ private:
         WaitAll(); 
     }
 
-    inline void AddProcess(size_t Process, std::function<void()>&& func, std::function<void()>&& lambda) {
+    inline void AddTaskToProcess(size_t Process, std::function<void()>&& func, std::function<void()>&& lambda) {
         std::lock_guard<std::mutex> lock(mutex);
         auto& taskVec = taskInfos[Process];
         taskVec.emplace_back(std::move(func), std::move(lambda));
     }
 
-    inline void AddProcessNoLog(size_t Process, std::function<void()>&& func) {
-        std::lock_guard<std::mutex> lock(mutex);
-        auto& taskVec = taskInfos[Process];
-        taskVec.emplace_back(std::move(func), [](){}); // An empty lambda as placeholder for no logging
-        tasks[Process] = { taskVec.back().first };
-    }
 
     void IncrementTaskCount(size_t Process) {
         std::lock_guard<std::mutex> lock(mutex);

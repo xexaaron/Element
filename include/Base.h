@@ -4,7 +4,8 @@
 #include <cassert>
 #include <string>
 #include "Structs.h"
-
+#include "Logger.h"
+#include "ThreadManager.h"
 
 class Base {
 public:

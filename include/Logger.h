@@ -7,6 +7,13 @@
 #include <sstream>
 #include <fstream>
 #include <regex>
+
+#ifdef FILE_LOGGING
+#include <ctime>
+    static std::ofstream fileStream;
+    constexpr char DATE[80] = "-%Y-%m-%d";
+#endif // FILE_LOGGING
+
 namespace Logger {
     namespace LogStyles {
         static const std::string LOG_STYLE_RESET = "\033[0m";
@@ -49,7 +56,7 @@ namespace Logger {
             static const std::string LOG_MAGENTA_BOLD = LogColors::LOG_MAGENTA + LogAttributes::LOG_BOLD;
             static const std::string LOG_CYAN_BOLD = LogColors::LOG_CYAN + LogAttributes::LOG_BOLD;
             static const std::string LOG_WHITE_BOLD = LogColors::LOG_WHITE + LogAttributes::LOG_BOLD;
-            /** UNDERLINE **/
+            /** UNDERLINE **/ 
             static const std::string LOG_RED_UNDERLINE = LogColors::LOG_RED + LogAttributes::LOG_UNDERLINE;
             static const std::string LOG_GREEN_UNDERLINE = LogColors::LOG_GREEN + LogAttributes::LOG_UNDERLINE;
             static const std::string LOG_YELLOW_UNDERLINE = LogColors::LOG_YELLOW + LogAttributes::LOG_UNDERLINE;
@@ -116,28 +123,126 @@ namespace Logger {
         }
    
     }
-    
-   
-    static std::string LOG_COLOR;
+    inline std::string ColorText(const char* Text, const std::string Color) {
+        return Color + std::string(Text) + Logger::LogStyles::LOG_STYLE_RESET;
+    }
+    inline std::string BoldText(const char* Text, const std::string Color) {
+        return Color + LogStyles::LogAttributes::LOG_BOLD + std::string(Text) + Logger::LogStyles::LOG_STYLE_RESET;
+    }
+    inline std::string ULBoldColorText(const char* Text, const std::string Color, const std::string ResetType) {
+        return Color + LogStyles::LogAttributes::LOG_UNDERLINE + LogStyles::LogAttributes::LOG_BOLD + std::string(Text) + ResetType;
+        
+    }
+    inline std::string ColonPrependWhitespace(int spaces, bool Semi) {
+        std::string temp;
+        for (int i = 0; i < spaces; i++) {
+            temp += " ";
+        }
+        return temp + (Semi ? "; " : ": ");
+    }
+    inline std::string ColorAndBracketText(const char* Text, const std::string Color) {
+        const std::string Bold = LogStyles::LogAttributes::LOG_BOLD;
+        return Color + Bold + "[" + Logger::LogStyles::LOG_STYLE_RESET + 
+        Color + std::string(Text) +
+        Logger::LogStyles::LOG_STYLE_RESET + Color + Bold + "]" + Logger::LogStyles::LOG_STYLE_RESET;
+    }
+    inline std::string ProcessToName(size_t process) {
+        const std::string Color = Logger::LogStyles::LogColors::LOG_CYAN;
+        std::string processIDName;
+        switch(process) {
+            case 0:
+                processIDName = ColorAndBracketText("WINDOW_PROCESS", Color);
+                break;
+            case 1:
+                processIDName = ColorAndBracketText("APP_PROCESS", Color);
+                break;
+            case 2:
+                processIDName = ColorAndBracketText("RENDER_PROCESS", Color);
+                break;
+            case 3:
+                processIDName = ColorAndBracketText("EVENT_PROCESS", Color);
+                break;
+            case 65534:
+                processIDName = ColorAndBracketText("LOG_PROCESS", Color);
+                break;
+            case 65535:
+                processIDName = ColorAndBracketText("MAIN_PROCESS", Color);
+                break;
+            default:
+                processIDName = ColorAndBracketText("UNKOWN_PROCESS", Color);
+                break;
+        }
+        return processIDName;
+    }
+    inline std::string int8_tToResultType(int8_t result) {
+        const std::string Color = Logger::LogStyles::LogColors::LOG_BLUE;
+        switch (result) {
+            case -1:
+                return ColorAndBracketText("FUNCTION_FAILURE", Color);      
+                break;
+            case 0:
+                return ColorAndBracketText("FUNCTION_RESULT_UNDEFINED", Color);
+                break;
+            case 1: 
+                return ColorAndBracketText("FUNCTION_SUCCESS", Color);
+                break;
+            default:
+                return ColorAndBracketText("FUNCTION_RESULT_UNDEFINED", Color);
+                break;
+        }
+    }
+    inline LogType int8_tToLogType(int8_t result) {
+        switch (result) {
+            case -1:
+                return LogType::RESULT_ERROR;
+                break;
+            case 0:
+                return LogType::RESULT_ERROR;
+                break;
+            case 1:
+                return LogType::RESULT_VALID;
+                break;
+            default:
+                return LogType::RESULT_ERROR;
+                break;
+        }
+    }
+    inline FILE* int8_tToStream(int8_t result) {
+        switch (result) {
+            case -1:
+                return stderr;
+                break;
+            case 0:
+                return stderr;
+                break;
+            case 1:
+                return stdout;
+                break;
+            default:
+                return nullptr;
+                break;
+        }
+    }
     inline std::string ComputeHeader(LogType type, size_t id) {
         std::string Header;
         std::string LOG_COLOR;
+        const std::string LOG_RESET = LogStyles::LogAttributes::LOG_RESET_UNDERLINE;
         switch (type) {
             case LogType::LOG:
                 LOG_COLOR = LogStyles::LogColors::LOG_YELLOW;
-                Header = LogStyles::LogColorAttributes::LOG_YELLOW_UNDERLINE_BOLD + "LOG" + LogStyles::LogAttributes::LOG_RESET_UNDERLINE + "                  : ";
+                Header = ULBoldColorText("LOG" ,LOG_COLOR, LOG_RESET) + ColonPrependWhitespace(18, false);
                 break;
             case LogType::STATUS:
                 LOG_COLOR = LogStyles::LogColors::LOG_CYAN;
-                Header = LogStyles::LogColorAttributes::LOG_CYAN_UNDERLINE_BOLD + "STATUS" + LogStyles::LogAttributes::LOG_RESET_UNDERLINE + "               : ";
+                Header = ULBoldColorText("STATUS" ,LOG_COLOR, LOG_RESET) + ColonPrependWhitespace(15, false);
                 break;
             case LogType::LOG_WARNING:
                 LOG_COLOR = LogStyles::LogColors::LOG_YELLOW;
-                Header = LogStyles::LogColorAttributes::LOG_YELLOW_UNDERLINE_BOLD + "WARNING" + LogStyles::LogAttributes::LOG_RESET_UNDERLINE + "              : ";
+                Header = ULBoldColorText("LOG_WARNING" ,LOG_COLOR, LOG_RESET) + ColonPrependWhitespace(14, false);
                 break;
             case LogType::LOG_ERROR:
                 LOG_COLOR = LogStyles::LogColors::LOG_RED;
-                Header = LogStyles::LogColorAttributes::LOG_RED_UNDERLINE_BOLD + "ERROR" + LogStyles::LogAttributes::LOG_RESET_UNDERLINE + "                : ";
+                Header = ULBoldColorText("LOG_WARNING" ,LOG_COLOR, LOG_RESET) + ColonPrependWhitespace(16, false);
                 break;
             case LogType::SUBSTATUS:
                 LOG_COLOR = LogStyles::LogColorAttributes::LOG_BLUE_BOLD;
@@ -145,23 +250,19 @@ namespace Logger {
                 break;
             case LogType::ASYNC_TASK:
                 LOG_COLOR = LogStyles::LogColors::LOG_MAGENTA;
-                Header = "----- ASYNC TASK " + LogStyles::LogColorAttributes::LOG_MAGENTA_BOLD + "[" + LogStyles::LogAttributes::LOG_RESET_BOLD + std::to_string(id) + 
-                LogStyles::LogColorAttributes::LOG_MAGENTA_BOLD + "]" + LogStyles::LogAttributes::LOG_RESET_BOLD + " : ";
+                Header = "----- ASYNC TASK " + ColorAndBracketText(std::to_string(id).c_str(), LOG_COLOR) + " : ";
                 //Header = "----- ASYNC TASK [" + std::to_string(id) + "] : ";
                 break;
             case LogType::NON_ASYNC_TASK:
                 LOG_COLOR = LogStyles::LogColors::LOG_MAGENTA;
-                Header = "----- NON_ASYNC_TASK " + LogStyles::LogColorAttributes::LOG_MAGENTA_BOLD + "[" + LogStyles::LogAttributes::LOG_RESET_BOLD + std::to_string(id) + 
-                LogStyles::LogColorAttributes::LOG_MAGENTA_BOLD + "]" + LogStyles::LogAttributes::LOG_RESET_BOLD + " : ";
+                Header = "----- NON_ASYNC_TASK " + ColorAndBracketText(std::to_string(id).c_str(), LOG_COLOR) + " : ";
                 break;
             case LogType::RESULT_VALID:
                 LOG_COLOR = LogStyles::LogColors::LOG_GREEN;
-                Header = "----- RESULT " + LogStyles::LogColorAttributes::LOG_GREEN_BOLD + "[" + LogStyles::LogAttributes::LOG_RESET_BOLD + "VALID" + 
-                LogStyles::LogColorAttributes::LOG_GREEN_BOLD + "]" + LogStyles::LogAttributes::LOG_RESET_BOLD + " : ";
+                Header = "----- RESULT     " + ColorAndBracketText(std::to_string(id).c_str(), LOG_COLOR) + " : ";
                 break;
             case LogType::RESULT_ERROR:
-                Header = "----- RESULT " + LogStyles::LogColorAttributes::LOG_RED_BOLD + "[" + LogStyles::LogAttributes::LOG_RESET_BOLD + "ERROR" + 
-                LogStyles::LogColorAttributes::LOG_RED_BOLD + "]" + LogStyles::LogAttributes::LOG_RESET_BOLD + " : ";
+                Header = "----- RESULT     " + ColorAndBracketText(std::to_string(id).c_str(), LOG_COLOR) + " : ";
                 break;
             default:
                 LOG_COLOR = LogStyles::LogColors::LOG_RED;
@@ -170,12 +271,13 @@ namespace Logger {
         }
         return LOG_COLOR + Header + LogStyles::LOG_STYLE_RESET;
     }
-#ifdef FILE_LOGGING
-    #include <ctime>
-    static std::ofstream fileStream;
-    constexpr char DATE[80] = "-%Y-%m-%d";
-   
-#endif // FILE_LOGGING
+    inline std::string LogTask(size_t taskID) {
+        const std::string BracketsColor = Logger::LogStyles::LogColors::LOG_BLUE;
+        const std::string TextColor = Logger::LogStyles::LogColorAttributes::LOG_WHITE_BOLD;
+        const std::string Reset = Logger::LogStyles::LOG_STYLE_RESET; 
+        return TextColor + "Task " + Reset + ColorAndBracketText(std::to_string(taskID).c_str(), BracketsColor);
+        
+    }
     inline void Log(FILE* stream, LogType type, size_t id, const char* format, ...) {
         std::string Header = ComputeHeader(type, id);
         va_list args;
@@ -207,7 +309,7 @@ namespace Logger {
     }
     template<typename T>
     inline std::string LogArgument(const T& arg) {
-        if constexpr (StringType<T>) {
+        if constexpr (Concepts::StringType<T>) {
             return std::string("\"") + std::string(arg) + std::string("\"");
         } else {
             return std::to_string(arg);
@@ -257,75 +359,42 @@ namespace Logger {
             }
         #endif // VERBOSE
     }
-
     template<>
     inline std::string LogArgumentType<uint8_t>(const uint8_t&) {
-        return Logger::LogStyles::LogColors::LOG_GREEN + "uint8_t" + Logger::LogStyles::LOG_STYLE_RESET;
+       const std::string Color = Logger::LogStyles::LogColors::LOG_GREEN;
+        return ColorText("uint8_t", Color);
     }
-
     template<>
     inline std::string LogArgumentType<uint16_t>(const uint16_t&) {
-        return Logger::LogStyles::LogColors::LOG_GREEN + "uint16_t" + Logger::LogStyles::LOG_STYLE_RESET;
+        const std::string Color = Logger::LogStyles::LogColors::LOG_GREEN;
+        return ColorText("unit16_t", Color);
     }
-
     template<>
     inline std::string LogArgumentType<uint32_t>(const uint32_t&) {
-        return Logger::LogStyles::LogColors::LOG_GREEN + "uint32_t" + Logger::LogStyles::LOG_STYLE_RESET;
+        const std::string Color = Logger::LogStyles::LogColors::LOG_GREEN;
+        return ColorText("uint32_t", Color);
     }
-
-    // Specializations for signed integers
     template<>
     inline std::string LogArgumentType<int8_t>(const int8_t&) {
-        return Logger::LogStyles::LogColors::LOG_GREEN + "int8_t" + Logger::LogStyles::LOG_STYLE_RESET;
+        const std::string Color = Logger::LogStyles::LogColors::LOG_GREEN;
+        return ColorText("int8_t", Color);
     }
-
     template<>
     inline std::string LogArgumentType<int16_t>(const int16_t&) {
-        return Logger::LogStyles::LogColors::LOG_GREEN + "int16_t" + Logger::LogStyles::LOG_STYLE_RESET;
+        const std::string Color = Logger::LogStyles::LogColors::LOG_GREEN;
+        return ColorText("int16_t", Color);
     }
-
     template<>
     inline std::string LogArgumentType<int32_t>(const int32_t&) {
-        return Logger::LogStyles::LogColors::LOG_GREEN + "int32_t" + Logger::LogStyles::LOG_STYLE_RESET;
+        const std::string Color = Logger::LogStyles::LogColors::LOG_GREEN;
+        return ColorText("int32_t", Color);
     }
-
     template<typename... Args>
     inline std::string LogArgumentTypes(const Args&... args) {
         std::string result;
         ((result += LogArgumentType(args) + ", "), ...); 
         return result;
     }
-    inline std::string ColorProcessName(const char* ProcessName) {
-        return Logger::LogStyles::LogColors::LOG_CYAN + std::string(ProcessName) + Logger::LogStyles::LOG_STYLE_RESET;
-    }
-    inline std::string ProcessToName(size_t process) {
-        std::string processIDName;
-        switch(process) {
-            case 0:
-                processIDName = ColorProcessName("WINDOW_PROCESS");
-                break;
-            case 1:
-                processIDName = ColorProcessName("APP_PROCESS");
-                break;
-            case 2:
-                processIDName = ColorProcessName("RENDER_PROCESS");
-                break;
-            case 3:
-                processIDName = ColorProcessName("EVENT_PROCESS");
-                break;
-            case 65534:
-                processIDName = ColorProcessName("LOG_PROCESS");
-                break;
-            case 65535:
-                processIDName = ColorProcessName("MAIN_PROCESS");
-                break;
-            default:
-                processIDName = ColorProcessName("UNKOWN_PROCESS");
-                break;
-        }
-        return processIDName;
-    }
-
     template<typename... Args>
     inline void MassLogArguments(const char* moduleName, const char* functionName, Args... args) {
         // Log the function call
@@ -359,11 +428,10 @@ namespace Logger {
         } else if(platform == "Darwin") {
             return std::string("DARWIN_");
         } else {
-            Logger::Log(stderr, LogType::LOG_ERROR, 65535, "We do not support your platform. How you made it this far im not sure.");
+            Logger::Log(stderr, LogType::LOG_ERROR, LOG_PROCESS, "We do not support your platform. How you made it this far im not sure.");
             std::exit(-1);
         }
     }
-
     template<typename... Args>
     inline void MassLogArgumentsAsync(const char* moduleName, size_t TaskID, size_t process, const char* functionName, Args... args) {
         std::ostringstream logStream;

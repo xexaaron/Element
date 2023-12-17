@@ -7,7 +7,7 @@ Window::Window(SWindowData data)  : Data(data), TargetPlatform(TARGET_PLATFORM) 
             TargetPlatform = "UNIX_";
         }
         LoadModule(WINDOW_DLL);
-        CallModuleFuncAsync<void>(WINDOW_DLL, AppendPlatform("CreateAndRunWindow"), WINDOW_PROCESS);
+        CallModuleFuncAsync<int>(WINDOW_DLL, AppendPlatform("CreateAndRunWindow"), WINDOW_PROCESS);
 }
 
 Window::~Window() {

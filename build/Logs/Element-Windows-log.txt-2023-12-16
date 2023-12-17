@@ -1,0 +1,48 @@
+
+[33m[33m[4m[1mLOG[24m                  : [0m%s
+
+[33m[33m[4m[1mLOG[24m                  : [0m[37m[1mProgram Execute[0m
+
+[36m[36m[4m[1mSTATUS[24m               : [0m%s
+
+[34m[1m-- SUBSTATUS         : [0m%s
+
+[35m----- ASYNC TASK [35m[1m[[22m0[35m[1m][22m : [0m[33mWIN32_CALL_MODULE_FUNCTION_ASYNC[0m[35m([0m[31mD:/GithubRepositories/Element/Modules/Windows/Release/Window.dll[0m, [33mWIN32_CreateAndRunWindow[0m, [36m[1m[[0m[36mWINDOW_PROCESS[0m[36m[1m][0m[35m)
+
+[36m[36m[4m[1mSTATUS[24m               : [0m%s
+
+[36m[36m[4m[1mSTATUS[24m               : [0m%s
+
+[34m[1m-- SUBSTATUS         : [0m%s
+
+[35m----- ASYNC TASK [35m[1m[[22m0[35m[1m][22m : [0m[33mWIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC[0m[35m([0m[31mD:/GithubRepositories/Element/Modules/Windows/Release/Window.dll[0m, [33mWIN32_SetWindowSize[0m, [36m[1m[[0m[36mRENDER_PROCESS[0m[36m[1m][0m, [34m[1m([0m[32mint32_t[0m[34m[1m)[0m[90m500[0m, [34m[1m([0m[32mint32_t[0m[34m[1m)[0m[90m500[0m[35m)
+
+[34m[1m-- SUBSTATUS         : [0m%s
+
+[35m----- ASYNC TASK [35m[1m[[22m1[35m[1m][22m : [0m[33mWIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC[0m[35m([0m[31mD:/GithubRepositories/Element/Modules/Windows/Release/Window.dll[0m, [33mWIN32_SetWindowColor[0m, [36m[1m[[0m[36mRENDER_PROCESS[0m[36m[1m][0m, [34m[1m([0m[32muint32_t[0m[34m[1m)[0m[90m0[0m, [34m[1m([0m[32muint32_t[0m[34m[1m)[0m[90m0[0m, [34m[1m([0m[32muint32_t[0m[34m[1m)[0m[90m0[0m[35m)
+
+[34m[1m-- SUBSTATUS         : [0m%s
+
+[35m----- ASYNC TASK [35m[1m[[22m2[35m[1m][22m : [0m[33mWIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC[0m[35m([0m[31mD:/GithubRepositories/Element/Modules/Windows/Release/Window.dll[0m, [33mWIN32_SetWindowPosition[0m, [36m[1m[[0m[36mRENDER_PROCESS[0m[36m[1m][0m, [34m[1m([0m[32mint32_t[0m[34m[1m)[0m[90m950[0m, [34m[1m([0m[32mint32_t[0m[34m[1m)[0m[90m500[0m[35m)
+
+[32m----- RESULT [32m[1m[[22mVALID[32m[1m][22m : [0m%s -> %s -> %s
+
+[32m----- RESULT [32m[1m[[22mVALID[32m[1m][22m : [0m%s -> %s -> %s
+
+[34m[1m-- SUBSTATUS         : [0m%s
+
+[35m----- ASYNC TASK [35m[1m[[22m3[35m[1m][22m : [0m[33mWIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC[0m[35m([0m[31mD:/GithubRepositories/Element/Modules/Windows/Release/Window.dll[0m, [33mWIN32_SetWindowTitle[0m, [36m[1m[[0m[36mRENDER_PROCESS[0m[36m[1m][0m, [34m[1m([0m[34mchar const * __ptr64[0m[34m[1m)[0m[90mWindow[0m[35m)
+
+[34m[1m-- SUBSTATUS         : [0m%s
+
+[35m----- ASYNC TASK [35m[1m[[22m4[35m[1m][22m : [0m[33mWIN32_CALL_MODULE_FUNCTION_ARGS_ASYNC[0m[35m([0m[31mD:/GithubRepositories/Element/Modules/Windows/Release/Window.dll[0m, [33mWIN32_SetWindowState[0m, [36m[1m[[0m[36mRENDER_PROCESS[0m[36m[1m][0m, [34m[1m([0m[34menum EWindowState[0m[34m[1m)[0m[90m0[0m[35m)
+
+[32m----- RESULT [32m[1m[[22mVALID[32m[1m][22m : [0m%s -> %s -> %s
+
+[32m----- RESULT [32m[1m[[22mVALID[32m[1m][22m : [0m%s -> %s -> %s
+
+[32m----- RESULT [32m[1m[[22mVALID[32m[1m][22m : [0m%s -> %s -> %s
+
+[36m[36m[4m[1mSTATUS[24m               : [0m%s
+
+[36m[36m[4m[1mSTATUS[24m               : [0m%s
